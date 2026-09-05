@@ -6,6 +6,8 @@ import { PrismaClient } from '@prisma/client';
 import authRoutes from './routes/authRoutes';
 import workspaceRoutes from './routes/workspaceRoutes';
 import boardRoutes from './routes/boardRoutes';
+import listRoutes from './routes/listRoutes';
+import taskRoutes from './routes/taskRoutes';
 
 dotenv.config();
 
@@ -34,6 +36,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/workspaces', workspaceRoutes);
 
 app.use('/api/boards', boardRoutes);
+
+app.use('/api/lists', listRoutes);
+
+app.use('/api/tasks', taskRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
