@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createTask } from '../controllers/taskController';
+import { createTask, reorderTask } from '../controllers/taskController';
 import { authenticate } from '../middleware/auth';
 
 const router = Router();
@@ -8,5 +8,6 @@ const router = Router();
 router.use(authenticate);
 
 router.post('/', createTask);
+router.patch('/:id/reorder', reorderTask); // Assuming you have a reorderTask function in your controller
 
 export default router;
