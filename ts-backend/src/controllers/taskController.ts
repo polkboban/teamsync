@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { AuthRequest } from '../middleware/auth';
+import { getSocket } from '../socket';
 
 const prisma = new PrismaClient();
 
@@ -121,7 +122,13 @@ export const reorderTask = async (req: AuthRequest, res: Response): Promise<void
         order: validatedData.order,
       },
     });
-
+    // Emit a socket event to notify clients about the task reorder
+    const boardId = task.list.board.id;
+    getSocket().to(`board:${boardId}`).emit('task:reordered', {
+      taskId: updatedTask.id,
+      listId: updatedTask.listId,
+      order: updatedTask.order,
+    });
     res.status(200).json({ message: 'Task reordered successfully', task: updatedTask });
   } catch (error) {
     if (error instanceof z.ZodError) {

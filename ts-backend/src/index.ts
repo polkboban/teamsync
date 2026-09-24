@@ -1,4 +1,5 @@
 import express from 'express';
+import { createServer } from 'node:http';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
@@ -8,15 +9,21 @@ import workspaceRoutes from './routes/workspaceRoutes';
 import boardRoutes from './routes/boardRoutes';
 import listRoutes from './routes/listRoutes';
 import taskRoutes from './routes/taskRoutes';
+import { initializeSocket } from './socket';
+import http from 'http';
 
 dotenv.config();
 
 const app = express();
+const httpServer = createServer(app);
+initializeSocket(httpServer);
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 5000;
 
 // Middlewares
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable CSP for now; adjust as needed
+}));
 app.use(cors());
 app.use(express.json());
 
@@ -41,6 +48,6 @@ app.use('/api/lists', listRoutes);
 
 app.use('/api/tasks', taskRoutes);
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
