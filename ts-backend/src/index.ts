@@ -10,7 +10,7 @@ import boardRoutes from './routes/boardRoutes';
 import listRoutes from './routes/listRoutes';
 import taskRoutes from './routes/taskRoutes';
 import { initializeSocket } from './socket';
-import http from 'http';
+import './config/redis';
 
 dotenv.config();
 

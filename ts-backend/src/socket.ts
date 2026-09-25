@@ -1,6 +1,7 @@
 import { Server as HttpServer } from 'node:http';
 import { Server as SocketIOServer } from 'socket.io';
 import { verifyToken } from './utils/jwt';
+import { redis } from './config/redis';
 
 let io: SocketIOServer | undefined;
 
@@ -32,19 +33,62 @@ export function initializeSocket(httpServer: HttpServer): SocketIOServer {
     });
 
 	io.on('connection', (socket) => {
-		console.log(`Socket connected: ${socket.id}`);
+		socket.on('join-board', async (boardId: string) => {
+        const userId = socket.data.userId || socket.id;
 
-		socket.on('join-board', (boardId: string) => {
-			socket.join(`board:${boardId}`);
-		});
+        if (userId) {
+            socket.join(`user:${userId}`);
+        }
 
-		socket.on('leave-board', (boardId: string) => {
-			socket.leave(`board:${boardId}`);
-		});
+        const room = `board:${boardId}`;
+        const redisKey = `board:${boardId}:active_users`;
 
-		socket.on('disconnect', (reason) => {
-			console.log(`Socket disconnected: ${socket.id} (${reason})`);
-		});
+        socket.join(room);
+        socket.data.currentBoard = boardId;
+
+        // Add user to the Redis active viewers set
+        await redis.sadd(redisKey, userId);
+        const activeUsers = await redis.smembers(redisKey);
+
+        // Broadcast updated presence list to everyone on this board
+        io?.to(room).emit('presence:update', {
+            boardId,
+            activeUsers,
+        });
+        });
+
+        socket.on('leave-board', async (boardId: string) => {
+        const userId = socket.data.userId || socket.id;
+        const room = `board:${boardId}`;
+        const redisKey = `board:${boardId}:active_users`;
+
+        socket.leave(room);
+        socket.data.currentBoard = null;
+
+        await redis.srem(redisKey, userId);
+        const activeUsers = await redis.smembers(redisKey);
+
+        io?.to(room).emit('presence:update', {
+            boardId,
+            activeUsers,
+        });
+        });
+
+        socket.on('disconnect', async () => {
+        const boardId = socket.data.currentBoard;
+        const userId = socket.data.userId || socket.id;
+
+        if (boardId) {
+            const redisKey = `board:${boardId}:active_users`;
+            await redis.srem(redisKey, userId);
+            const activeUsers = await redis.smembers(redisKey);
+
+            io?.to(`board:${boardId}`).emit('presence:update', {
+            boardId,
+            activeUsers,
+            });
+        }
+        });
 	});
 
 	return io;

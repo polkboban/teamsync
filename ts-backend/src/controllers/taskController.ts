@@ -17,13 +17,11 @@ const reorderTaskSchema = z.object({
   order: z.number(),
 });
 
-// 1. CREATE A TASK (CARD)
 export const createTask = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const validatedData = createTaskSchema.parse(req.body);
     const userId = req.userId!;
 
-    // Security: Verify the list exists and the user has access to its workspace
     const list = await prisma.list.findUnique({
       where: { id: validatedData.listId },
       include: {
@@ -44,7 +42,6 @@ export const createTask = async (req: AuthRequest, res: Response): Promise<void>
       return;
     }
 
-    // Calculate the new order (put this task at the bottom of the list)
     const highestOrderTask = await prisma.task.findFirst({
       where: { listId: validatedData.listId },
       orderBy: { order: 'desc' },
@@ -78,7 +75,6 @@ export const reorderTask = async (req: AuthRequest, res: Response): Promise<void
     const validatedData = reorderTaskSchema.parse(req.body);
     const userId = req.userId!;
 
-    // Security: Find the task and ensure the user has access to its workspace
     const task = await prisma.task.findUnique({
       where: { id },
       include: {
@@ -97,7 +93,6 @@ export const reorderTask = async (req: AuthRequest, res: Response): Promise<void
       return;
     }
 
-    // Security: If moving to a completely different list, verify access to that list too
     if (task.listId !== validatedData.listId) {
       const destinationList = await prisma.list.findUnique({
         where: { id: validatedData.listId },
@@ -114,7 +109,6 @@ export const reorderTask = async (req: AuthRequest, res: Response): Promise<void
       }
     }
 
-    // Update the task's list and order
     const updatedTask = await prisma.task.update({
       where: { id },
       data: {
@@ -122,7 +116,6 @@ export const reorderTask = async (req: AuthRequest, res: Response): Promise<void
         order: validatedData.order,
       },
     });
-    // Emit a socket event to notify clients about the task reorder
     const boardId = task.list.board.id;
     getSocket().to(`board:${boardId}`).emit('task:reordered', {
       taskId: updatedTask.id,
@@ -137,5 +130,52 @@ export const reorderTask = async (req: AuthRequest, res: Response): Promise<void
       console.error(error);
       res.status(500).json({ error: 'Internal server error' });
     }
+  }
+};
+
+export const assignTask = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id: taskId } = req.params;
+    const { assigneeId } = req.body; // User ID being assigned
+    const actorId = req.userId!;
+
+    const updatedTask = await prisma.task.update({
+      where: { id: taskId },
+      data: { assigneeId },
+      include: {
+        list: {
+          include: { board: true },
+        },
+        assignee: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+
+    const io = getSocket();
+    const boardId = updatedTask.list.board.id;
+
+    // 1. Broadcast to the board room
+    io.to(`board:${boardId}`).emit('task-updated', {
+      taskId: updatedTask.id,
+      assignee: updatedTask.assignee,
+    });
+
+    // 2. Push direct notification to assignee (if assigned to someone else)
+    if (assigneeId && assigneeId !== actorId) {
+      io.to(`user:${assigneeId}`).emit('notification:new', {
+        type: 'TASK_ASSIGNED',
+        title: 'New Task Assignment',
+        message: `You were assigned to "${updatedTask.title}"`,
+        taskId: updatedTask.id,
+        boardId,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    res.status(200).json({ task: updatedTask });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
