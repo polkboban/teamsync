@@ -38,22 +38,22 @@ export const ListColumn: React.FC<ListColumnProps> = ({
   };
 
   return (
-    <div className="w-80 shrink-0 bg-carbon-900 border border-carbon-800 flex flex-col max-h-[calc(100vh-8.5rem)] shadow-lg shadow-black/40">
-      {/* Column Lane Header */}
-      <div className="p-3 pb-2.5 flex items-center justify-between border-b border-carbon-800 select-none">
-        <div className="flex items-center space-x-2 font-mono">
-          <span className="text-cyan-400 text-xs font-bold tracking-wider uppercase">
-            // {list.title}
-          </span>
-          <span className="px-1.5 py-0.2 bg-carbon-800 border border-carbon-700 text-[10px] font-bold text-carbon-400">
-            {String(list.tasks.length).padStart(2, '0')}
+    <div className="w-72 shrink-0 bg-surface-900 border border-border-subtle rounded-xl flex flex-col max-h-[calc(100vh-7.5rem)] shadow-sm">
+      {/* Column Header */}
+      <div className="p-3 pb-2 flex items-center justify-between border-b border-border-subtle select-none">
+        <div className="flex items-center space-x-2">
+          <h3 className="font-medium text-xs text-zinc-200 tracking-tight">
+            {list.title}
+          </h3>
+          <span className="px-1.5 py-0.5 rounded bg-white/[0.06] text-[10px] font-medium text-zinc-400">
+            {list.tasks.length}
           </span>
         </div>
 
         <button
           onClick={() => setIsAdding(true)}
-          className="p-1 hover:bg-carbon-800 text-carbon-400 hover:text-cyan-400 transition"
-          title="Add task to lane"
+          className="p-1 hover:bg-white/[0.06] text-zinc-400 hover:text-white rounded transition"
+          title="Add task"
         >
           <Plus className="w-3.5 h-3.5" />
         </button>
@@ -65,8 +65,8 @@ export const ListColumn: React.FC<ListColumnProps> = ({
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`p-2.5 flex-1 overflow-y-auto space-y-2 min-h-[140px] transition-colors ${
-              snapshot.isDraggingOver ? 'bg-cyan-950/15 ring-1 ring-cyan-500/30' : ''
+            className={`p-2 flex-1 overflow-y-auto space-y-2 min-h-[120px] transition-colors rounded-b-xl ${
+              snapshot.isDraggingOver ? 'bg-accent-subtle/30 ring-1 ring-accent/30' : ''
             }`}
           >
             {list.tasks.map((task, index) => (
@@ -82,35 +82,35 @@ export const ListColumn: React.FC<ListColumnProps> = ({
 
             {/* Quick Add Form inside column bottom */}
             {isAdding ? (
-              <form onSubmit={handleCreate} className="bg-carbon-850 border border-carbon-700 p-2.5 space-y-2 font-mono">
+              <form onSubmit={handleCreate} className="bg-surface-850 border border-border-hover rounded-lg p-2.5 space-y-2 shadow-md">
                 <input
                   type="text"
-                  placeholder="TASK TITLE..."
+                  placeholder="Task title..."
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
                   autoFocus
                   required
-                  className="w-full bg-carbon-900 border border-carbon-750 px-2 py-1.5 text-xs text-white placeholder-carbon-500 focus:outline-none focus:border-cyan-500"
+                  className="w-full bg-surface-900 border border-border-subtle rounded px-2.5 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-accent/80 transition"
                 />
                 <textarea
-                  placeholder="SPEC / DETAILS (OPTIONAL)..."
+                  placeholder="Add details (optional)..."
                   value={taskDescription}
                   onChange={(e) => setTaskDescription(e.target.value)}
                   rows={2}
-                  className="w-full bg-carbon-900 border border-carbon-750 px-2 py-1.5 text-xs text-white placeholder-carbon-500 focus:outline-none focus:border-cyan-500 resize-none font-sans"
+                  className="w-full bg-surface-900 border border-border-subtle rounded px-2.5 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-accent/80 transition resize-none"
                 />
-                <div className="flex items-center space-x-2 pt-1 font-mono">
+                <div className="flex items-center space-x-1.5 pt-0.5">
                   <button
                     type="submit"
                     disabled={isSubmitting || !taskTitle.trim()}
-                    className="px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-carbon-950 text-[11px] font-bold uppercase transition"
+                    className="px-2.5 py-1 bg-white hover:bg-zinc-200 disabled:opacity-50 text-zinc-900 rounded text-xs font-medium transition shadow-sm"
                   >
-                    {isSubmitting ? 'SAVING...' : '+ DISPATCH'}
+                    {isSubmitting ? 'Adding...' : 'Add card'}
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsAdding(false)}
-                    className="p-1 hover:bg-carbon-800 text-carbon-400 hover:text-white transition"
+                    className="p-1 hover:bg-white/[0.06] text-zinc-400 hover:text-white rounded transition"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -120,10 +120,10 @@ export const ListColumn: React.FC<ListColumnProps> = ({
               <button
                 type="button"
                 onClick={() => setIsAdding(true)}
-                className="w-full py-2 text-[11px] font-mono text-carbon-500 hover:text-cyan-400 hover:bg-carbon-850/50 border border-dashed border-carbon-800 hover:border-carbon-700 flex items-center justify-center space-x-1.5 transition uppercase"
+                className="w-full py-1.5 text-xs text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.03] rounded-md border border-dashed border-border-subtle flex items-center justify-center space-x-1 transition"
               >
                 <Plus className="w-3 h-3" />
-                <span>ADD_TASK</span>
+                <span>Add card</span>
               </button>
             )}
           </div>

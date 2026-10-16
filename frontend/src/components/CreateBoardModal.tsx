@@ -29,66 +29,70 @@ export const CreateBoardModal: React.FC<CreateBoardModalProps> = ({
       setTitle('');
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'FAILED TO INITIALIZE BOARD');
+      setError(err.response?.data?.error || 'Failed to create board');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150 font-sans">
-      <div className="bg-carbon-900 border border-carbon-750 w-full max-w-sm p-6 shadow-2xl relative font-mono">
-        <div className="flex items-center justify-between pb-3 border-b border-carbon-800">
-          <div className="flex items-center space-x-2 text-cyan-400">
-            <Kanban className="w-4 h-4" />
-            <h3 className="font-display text-xs font-bold uppercase tracking-wider text-white">
-              INITIALIZE BOARD
-            </h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150 font-sans">
+      <div className="bg-surface-900 border border-border-subtle rounded-xl w-full max-w-sm p-6 shadow-2xl relative">
+        <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-7 h-7 rounded-md bg-white/[0.04] border border-border-subtle flex items-center justify-center text-zinc-300">
+              <Kanban className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-white tracking-tight">
+                Create Board
+              </h3>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-carbon-800 text-carbon-400 hover:text-white transition"
+            className="p-1 rounded-md text-zinc-400 hover:text-white hover:bg-white/[0.05] transition"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {error && (
-          <div className="mt-3 p-2.5 bg-rose-950/30 border border-rose-800/80 text-[11px] text-rose-300 uppercase">
-            // ERR: {error}
+          <div className="mt-4 p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-lg text-xs text-rose-300">
+            {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-carbon-400 mb-1">
-              BOARD IDENTIFIER / TITLE
+            <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+              Board title
             </label>
             <input
               type="text"
-              placeholder="E.G. SPRINT 24 // DISPATCH"
+              placeholder="e.g. Sprint 24, Product Roadmap"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
               autoFocus
-              className="w-full bg-carbon-850 border border-carbon-750 px-3 py-2 text-xs text-white placeholder-carbon-600 focus:outline-none focus:border-cyan-500 uppercase font-mono"
+              className="w-full bg-surface-850 border border-border-subtle focus:border-accent rounded-lg px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none transition"
             />
           </div>
 
-          <div className="flex items-center justify-end space-x-3 pt-2">
+          <div className="flex items-center justify-end space-x-2.5 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 text-xs text-carbon-400 hover:text-white transition uppercase"
+              className="px-3.5 py-1.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.05] rounded-lg transition"
             >
-              CANCEL
+              Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading || !title.trim()}
-              className="px-4 py-2 text-xs font-bold uppercase tracking-wider bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-carbon-950 transition"
+              className="px-3.5 py-1.5 text-xs font-medium bg-accent hover:bg-accent-hover disabled:opacity-50 text-white rounded-lg transition shadow-sm shadow-accent/20"
             >
-              {isLoading ? 'CREATING...' : '+ CREATE BOARD'}
+              {isLoading ? 'Creating...' : 'Create board'}
             </button>
           </div>
         </form>

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
+import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { BoardPage } from './pages/BoardPage';
@@ -24,9 +25,9 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 space-y-3">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-        <span className="text-xs font-medium">Connecting to TeamSync...</span>
+      <div className="min-h-screen bg-canvas flex flex-col items-center justify-center text-zinc-400 space-y-3 font-sans">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+        <span className="text-xs font-medium text-zinc-400">Connecting to TeamSync...</span>
       </div>
     );
   }
@@ -43,14 +44,14 @@ const PublicOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 space-y-3">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+      <div className="min-h-screen bg-canvas flex flex-col items-center justify-center text-zinc-400 space-y-3 font-sans">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
       </div>
     );
   }
 
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/app" replace />;
   }
 
   return <>{children}</>;
@@ -63,6 +64,15 @@ export const App: React.FC = () => {
         <SocketProvider>
           <BrowserRouter>
             <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route
+                path="/app"
+                element={
+                  <ProtectedRoute>
+                    <BoardPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/login"
                 element={
@@ -80,14 +90,6 @@ export const App: React.FC = () => {
                 }
               />
               <Route path="/invite/:token" element={<InvitePage />} />
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <BoardPage />
-                  </ProtectedRoute>
-                }
-              />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>

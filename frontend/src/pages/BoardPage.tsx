@@ -246,15 +246,15 @@ export const BoardPage: React.FC = () => {
 
   if (isLoadingWs) {
     return (
-      <div className="min-h-screen bg-carbon-950 flex flex-col items-center justify-center text-carbon-400 space-y-3 font-mono">
-        <Loader2 className="w-7 h-7 animate-spin text-cyan-400" />
-        <span className="text-xs tracking-wider uppercase text-carbon-400">INITIALIZING_TELEMETRY...</span>
+      <div className="min-h-screen bg-canvas flex flex-col items-center justify-center text-zinc-500 space-y-2">
+        <Loader2 className="w-6 h-6 animate-spin text-accent" />
+        <span className="text-xs">Loading workspace...</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-carbon-950 flex flex-col overflow-hidden font-sans">
+    <div className="min-h-screen bg-canvas flex flex-col overflow-hidden font-sans">
       {/* Top Navigation */}
       <Navbar
         currentWorkspace={currentWorkspace}
@@ -276,35 +276,31 @@ export const BoardPage: React.FC = () => {
         />
 
         {/* Main Board Area */}
-        <main className="flex-1 flex flex-col bg-carbon-950 overflow-hidden bg-telemetry-grid">
-          {/* Subheader: Board Title & Active Viewers Telemetry Presence */}
+        <main className="flex-1 flex flex-col bg-canvas overflow-hidden">
+          {/* Subheader: Board Title & Active Presence */}
           {currentBoard ? (
-            <div className="h-12 px-5 border-b border-carbon-800 flex items-center justify-between shrink-0 bg-carbon-900/90 font-mono">
-              <div className="flex items-center space-x-3">
-                <Kanban className="w-4 h-4 text-cyan-400" />
-                <h2 className="font-display text-sm font-bold text-white tracking-wider uppercase">
+            <div className="h-11 px-5 border-b border-border-subtle flex items-center justify-between shrink-0 bg-surface-900/40">
+              <div className="flex items-center space-x-2.5">
+                <Kanban className="w-4 h-4 text-zinc-400" />
+                <h2 className="text-xs font-semibold text-white tracking-tight">
                   {currentBoard.title}
                 </h2>
-                <span className="text-[10px] text-carbon-500 hidden sm:inline">
-                  // ID_{currentBoard.id.slice(0, 8)}
-                </span>
               </div>
 
               {/* Active presence indicators */}
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-1.5 text-[11px] text-carbon-400">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="hidden md:inline uppercase text-[10px] text-carbon-500">OPERATORS_ACTIVE:</span>
+              <div className="flex items-center space-x-2.5">
+                <div className="flex items-center space-x-1.5 text-xs text-zinc-400">
+                  <span className="hidden sm:inline text-[11px] text-zinc-500">Active now:</span>
                 </div>
                 <div className="flex -space-x-1 overflow-hidden">
                   {activeUsers.map((activeId, idx) => {
                     const memberMatch = members.find((m) => m.userId === activeId || m.user.id === activeId);
-                    const name = memberMatch?.user.name || (activeId === user?.id ? user?.name : `Op ${idx + 1}`);
+                    const name = memberMatch?.user.name || (activeId === user?.id ? user?.name : `User ${idx + 1}`);
                     return (
                       <div
                         key={idx}
-                        title={`${name} (Live on frequency)`}
-                        className="w-6 h-6 bg-carbon-800 border border-carbon-700 text-[10px] text-cyan-300 flex items-center justify-center font-display font-bold uppercase shadow-sm ring-1 ring-cyan-500/40"
+                        title={`${name} (Viewing board)`}
+                        className="w-5 h-5 rounded-full bg-gradient-to-tr from-zinc-700 to-zinc-600 border border-canvas text-[9px] text-white flex items-center justify-center font-medium uppercase shadow-sm"
                       >
                         {name.charAt(0)}
                       </div>
@@ -314,57 +310,53 @@ export const BoardPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="h-12 px-5 border-b border-carbon-800 flex items-center text-xs text-carbon-500 font-mono">
-              // NO_BOARD_SELECTED // INITIALIZE OR SELECT BOARD
+            <div className="h-11 px-5 border-b border-border-subtle flex items-center text-xs text-zinc-500">
+              Select or create a board to get started
             </div>
           )}
 
           {/* Kanban Board Columns Container */}
           <div className="flex-1 overflow-x-auto p-5">
             {!currentWorkspace ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-8 font-mono">
-                <div className="w-14 h-14 bg-carbon-900 border border-carbon-800 text-cyan-400 flex items-center justify-center mb-4">
-                  <Sparkles className="w-6 h-6" />
+              <div className="h-full flex flex-col items-center justify-center text-center p-8">
+                <div className="w-12 h-12 rounded-xl bg-surface-850 border border-border-subtle text-accent flex items-center justify-center mb-3">
+                  <Sparkles className="w-5 h-5" />
                 </div>
-                <h3 className="font-display text-sm font-bold text-white uppercase tracking-wider">
-                  WORKSPACE REQUIRED
-                </h3>
-                <p className="text-xs text-carbon-400 max-w-sm mt-1">
-                  Initialize your organization workspace to dispatch boards and invite operators.
+                <h3 className="text-sm font-semibold text-white">Create your first workspace</h3>
+                <p className="text-xs text-zinc-400 max-w-sm mt-1">
+                  Workspaces group your projects, boards, and team members together.
                 </p>
                 <button
                   onClick={() => setIsCreateWsOpen(true)}
-                  className="mt-4 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-carbon-950 text-xs font-bold uppercase tracking-wider transition"
+                  className="mt-4 px-3.5 py-1.5 bg-white hover:bg-zinc-200 text-zinc-900 rounded-md text-xs font-medium transition shadow-sm"
                 >
-                  + CREATE WORKSPACE
+                  Create workspace
                 </button>
               </div>
             ) : !currentBoard ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-8 font-mono">
-                <div className="w-14 h-14 bg-carbon-900 border border-carbon-800 text-carbon-400 flex items-center justify-center mb-4">
-                  <Kanban className="w-6 h-6" />
+              <div className="h-full flex flex-col items-center justify-center text-center p-8">
+                <div className="w-12 h-12 rounded-xl bg-surface-850 border border-border-subtle text-zinc-400 flex items-center justify-center mb-3">
+                  <Kanban className="w-5 h-5" />
                 </div>
-                <h3 className="font-display text-sm font-bold text-white uppercase tracking-wider">
-                  DISPATCH BOARD EMPTY
-                </h3>
-                <p className="text-xs text-carbon-400 max-w-sm mt-1">
-                  Create your first board to manage real-time tasks with synchronized lanes.
+                <h3 className="text-sm font-semibold text-white">No board selected</h3>
+                <p className="text-xs text-zinc-400 max-w-sm mt-1">
+                  Create a board to organize tasks with lists and drag-and-drop cards.
                 </p>
                 <button
                   onClick={() => setIsCreateBoardOpen(true)}
-                  className="mt-4 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-carbon-950 text-xs font-bold uppercase tracking-wider transition"
+                  className="mt-4 px-3.5 py-1.5 bg-white hover:bg-zinc-200 text-zinc-900 rounded-md text-xs font-medium transition shadow-sm"
                 >
-                  + INITIALIZE BOARD
+                  Create board
                 </button>
               </div>
             ) : isLoadingLists ? (
-              <div className="h-full flex flex-col items-center justify-center text-carbon-500 font-mono space-y-2">
-                <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
-                <span className="text-[11px] uppercase tracking-wider">SYNCING_LANES...</span>
+              <div className="h-full flex flex-col items-center justify-center text-zinc-500 space-y-2">
+                <Loader2 className="w-6 h-6 animate-spin text-accent" />
+                <span className="text-xs">Loading cards...</span>
               </div>
             ) : (
               <DragDropContext onDragEnd={handleDragEnd}>
-                <div className="flex items-start space-x-4 h-full">
+                <div className="flex items-start space-x-3 h-full">
                   {lists.map((list) => (
                     <ListColumn
                       key={list.id}
@@ -379,29 +371,29 @@ export const BoardPage: React.FC = () => {
                     />
                   ))}
 
-                  {/* Add New List (Lane) */}
-                  <div className="w-80 shrink-0 font-mono">
+                  {/* Add New List (Column) */}
+                  <div className="w-72 shrink-0">
                     {isAddingList ? (
                       <form
                         onSubmit={handleCreateList}
-                        className="bg-carbon-900 border border-carbon-750 p-3 space-y-2 shadow-2xl"
+                        className="bg-surface-900 border border-border-hover rounded-xl p-3 space-y-2 shadow-md"
                       >
                         <input
                           type="text"
-                          placeholder="LANE NAME (E.G. IN REVIEW)..."
+                          placeholder="Column title (e.g. In Review)..."
                           value={newListTitle}
                           onChange={(e) => setNewListTitle(e.target.value)}
                           autoFocus
                           required
-                          className="w-full bg-carbon-850 border border-carbon-700 px-3 py-1.5 text-xs text-white placeholder-carbon-500 focus:outline-none focus:border-cyan-500 uppercase"
+                          className="w-full bg-surface-850 border border-border-subtle rounded px-2.5 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-accent/80 transition"
                         />
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-1.5">
                           <button
                             type="submit"
                             disabled={createListMutation.isPending || !newListTitle.trim()}
-                            className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-carbon-950 text-xs font-bold uppercase transition"
+                            className="px-2.5 py-1 bg-white hover:bg-zinc-200 disabled:opacity-50 text-zinc-900 rounded text-xs font-medium transition shadow-sm"
                           >
-                            {createListMutation.isPending ? 'CREATING...' : '+ ADD LANE'}
+                            {createListMutation.isPending ? 'Adding...' : 'Add list'}
                           </button>
                           <button
                             type="button"
@@ -409,19 +401,19 @@ export const BoardPage: React.FC = () => {
                               setIsAddingList(false);
                               setNewListTitle('');
                             }}
-                            className="px-3 py-1.5 text-xs text-carbon-400 hover:text-white transition uppercase"
+                            className="px-2 py-1 text-xs text-zinc-400 hover:text-white transition"
                           >
-                            CANCEL
+                            Cancel
                           </button>
                         </div>
                       </form>
                     ) : (
                       <button
                         onClick={() => setIsAddingList(true)}
-                        className="w-full py-3 px-4 bg-carbon-900/60 hover:bg-carbon-900 border border-dashed border-carbon-800 hover:border-carbon-700 text-xs font-bold text-carbon-500 hover:text-cyan-400 flex items-center justify-center space-x-2 transition uppercase"
+                        className="w-full py-2.5 px-3 bg-surface-900/40 hover:bg-surface-900 border border-dashed border-border-subtle hover:border-border-hover rounded-xl text-xs font-medium text-zinc-400 hover:text-zinc-200 flex items-center justify-center space-x-1.5 transition"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>+ ADD DISPATCH LANE</span>
+                        <span>Add list</span>
                       </button>
                     )}
                   </div>

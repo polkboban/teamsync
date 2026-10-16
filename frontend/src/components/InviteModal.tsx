@@ -31,7 +31,7 @@ export const InviteModal: React.FC<InviteModalProps> = ({
       const link = `${window.location.origin}/invite/${res.inviteToken}`;
       setInviteLink(link);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'FAILED TO GENERATE INVITE TOKEN');
+      setError(err.response?.data?.error || 'Failed to generate invite token');
     } finally {
       setIsLoading(false);
     }
@@ -46,66 +46,71 @@ export const InviteModal: React.FC<InviteModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150 font-sans">
-      <div className="bg-carbon-900 border border-carbon-750 w-full max-w-md p-6 shadow-2xl relative font-mono">
-        <div className="flex items-center justify-between pb-3 border-b border-carbon-800">
-          <div className="flex items-center space-x-2 text-cyan-400">
-            <UserPlus className="w-4 h-4" />
-            <h3 className="font-display text-xs font-bold uppercase tracking-wider text-white">
-              DISPATCH ACCESS INVITE
-            </h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150 font-sans">
+      <div className="bg-surface-900 border border-border-subtle rounded-xl w-full max-w-md p-6 shadow-2xl relative">
+        <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-7 h-7 rounded-md bg-white/[0.04] border border-border-subtle flex items-center justify-center text-zinc-300">
+              <UserPlus className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-white tracking-tight">
+                Invite to Workspace
+              </h3>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-carbon-800 text-carbon-400 hover:text-white transition"
+            className="p-1 rounded-md text-zinc-400 hover:text-white hover:bg-white/[0.05] transition"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <p className="text-[11px] text-carbon-400 mt-3 leading-relaxed uppercase">
-          GENERATE REDIS-BACKED 48-HOUR SINGLE-USE ACCESS TOKEN FOR <span className="text-white font-semibold">{workspaceName}</span>.
+        <p className="text-xs text-zinc-400 mt-3 leading-relaxed">
+          Create a secure, 48-hour single-use link to invite a teammate to{' '}
+          <span className="text-zinc-200 font-medium">{workspaceName}</span>.
         </p>
 
         {error && (
-          <div className="mt-3 p-2.5 bg-rose-950/30 border border-rose-800/80 text-[11px] text-rose-300 uppercase">
-            // ERR: {error}
+          <div className="mt-3 p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-lg text-xs text-rose-300">
+            {error}
           </div>
         )}
 
         <div className="mt-4 space-y-4">
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-carbon-400 mb-1.5">
-              CLEARANCE LEVEL / ROLE
+            <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+              Role & permissions
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2.5">
               <button
                 type="button"
                 onClick={() => { setRole('MEMBER'); setInviteLink(null); }}
-                className={`p-2.5 border text-left transition ${
+                className={`p-3 rounded-lg border text-left transition ${
                   role === 'MEMBER'
-                    ? 'border-cyan-500 bg-cyan-950/20 text-cyan-200'
-                    : 'border-carbon-750 bg-carbon-850/50 text-carbon-400 hover:border-carbon-600'
+                    ? 'border-accent/80 bg-accent/[0.08] text-white ring-1 ring-accent/30'
+                    : 'border-border-subtle bg-surface-850 text-zinc-400 hover:border-border-hover'
                 }`}
               >
-                <div className="text-xs font-bold uppercase">MEMBER</div>
-                <div className="text-[9px] text-carbon-500 mt-0.5 uppercase">TASK EDIT ACCESS</div>
+                <div className="text-xs font-medium text-zinc-200">Member</div>
+                <div className="text-[11px] text-zinc-400 mt-0.5">Can view, create & update tasks</div>
               </button>
 
               <button
                 type="button"
                 onClick={() => { setRole('ADMIN'); setInviteLink(null); }}
-                className={`p-2.5 border text-left transition ${
+                className={`p-3 rounded-lg border text-left transition ${
                   role === 'ADMIN'
-                    ? 'border-cyan-500 bg-cyan-950/20 text-cyan-200'
-                    : 'border-carbon-750 bg-carbon-850/50 text-carbon-400 hover:border-carbon-600'
+                    ? 'border-accent/80 bg-accent/[0.08] text-white ring-1 ring-accent/30'
+                    : 'border-border-subtle bg-surface-850 text-zinc-400 hover:border-border-hover'
                 }`}
               >
-                <div className="text-xs font-bold uppercase flex items-center space-x-1">
-                  <span>ADMIN</span>
-                  <Shield className="w-3 h-3 text-cyan-400" />
+                <div className="text-xs font-medium text-zinc-200 flex items-center space-x-1.5">
+                  <span>Admin</span>
+                  <Shield className="w-3 h-3 text-accent" />
                 </div>
-                <div className="text-[9px] text-carbon-500 mt-0.5 uppercase">OPERATOR & LANE MGMT</div>
+                <div className="text-[11px] text-zinc-400 mt-0.5">Manage boards, lists & members</div>
               </button>
             </div>
           </div>
@@ -114,34 +119,37 @@ export const InviteModal: React.FC<InviteModalProps> = ({
             <button
               onClick={handleGenerate}
               disabled={isLoading}
-              className="w-full py-2.5 px-4 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-carbon-950 text-xs font-bold uppercase tracking-wider transition shadow-glow-cyan flex items-center justify-center space-x-2"
+              className="w-full py-2 px-3 bg-accent hover:bg-accent-hover disabled:opacity-50 text-white text-xs font-medium rounded-lg transition shadow-sm shadow-accent/20 flex items-center justify-center space-x-2"
             >
-              <span>{isLoading ? 'GENERATING TOKEN...' : 'GENERATE DISPATCH TOKEN'}</span>
+              <span>{isLoading ? 'Generating link...' : 'Generate invite link'}</span>
             </button>
           ) : (
-            <div className="space-y-2">
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-                ACTIVE ACCESS TOKEN LINK (EXPIRES IN 48H)
+            <div className="space-y-2 pt-1">
+              <label className="block text-xs font-medium text-emerald-400">
+                Active invite link (expires in 48 hours)
               </label>
               <div className="flex items-center space-x-2">
                 <input
                   type="text"
                   readOnly
                   value={inviteLink}
-                  className="flex-1 bg-carbon-850 border border-carbon-750 px-3 py-2 text-[11px] text-cyan-300 font-mono select-all focus:outline-none"
+                  className="flex-1 bg-surface-850 border border-border-subtle rounded-lg px-3 py-2 text-xs text-zinc-200 font-mono select-all focus:outline-none"
                 />
                 <button
                   onClick={handleCopy}
-                  className={`p-2 border transition flex items-center justify-center ${
+                  className={`p-2 rounded-lg border transition flex items-center justify-center ${
                     copied
-                      ? 'bg-emerald-600 text-carbon-950 border-emerald-500'
-                      : 'bg-carbon-850 hover:bg-carbon-800 text-carbon-200 border-carbon-750'
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                      : 'bg-surface-850 hover:bg-white/[0.08] text-zinc-300 border-border-subtle'
                   }`}
                   title="Copy link"
                 >
-                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                 </button>
               </div>
+              <p className="text-[11px] text-zinc-500">
+                Single-use link powered by Redis token expiry.
+              </p>
             </div>
           )}
         </div>

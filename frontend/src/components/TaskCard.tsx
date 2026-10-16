@@ -24,72 +24,69 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
-          className={`group bg-carbon-850/95 border border-carbon-750 hover:border-carbon-600 p-3 transition-all select-none relative ${
+          className={`group bg-surface-850 border border-border-subtle hover:border-border-hover rounded-lg p-3 transition-all select-none relative ${
             snapshot.isDragging
-              ? 'shadow-glow-cyan ring-1 ring-cyan-500 bg-carbon-800 rotate-[1deg] scale-[1.02] z-50'
+              ? 'shadow-xl ring-1 ring-accent/60 bg-surface-800 rotate-[1deg] scale-[1.01] z-50'
               : ''
           }`}
         >
-          {/* Card Meta & Drag Handle */}
-          <div className="flex items-center justify-between gap-2 mb-1.5 font-mono text-[10px]">
-            <span className="text-cyan-400 font-bold tracking-wider">
-              TASK_{task.id.slice(0, 6).toUpperCase()}
-            </span>
+          {/* Header & Drag Handle */}
+          <div className="flex items-start justify-between gap-1.5">
+            <h4 className="text-xs font-medium text-zinc-100 group-hover:text-white transition leading-snug break-words flex-1">
+              {task.title}
+            </h4>
             <div
               {...provided.dragHandleProps}
-              className="opacity-0 group-hover:opacity-100 p-0.5 text-carbon-500 hover:text-carbon-200 transition cursor-grab active:cursor-grabbing"
+              className="opacity-0 group-hover:opacity-100 p-0.5 text-zinc-500 hover:text-zinc-300 transition cursor-grab active:cursor-grabbing rounded"
               title="Drag task"
             >
               <GripVertical className="w-3.5 h-3.5" />
             </div>
           </div>
 
-          {/* Title */}
-          <h4 className="text-xs font-semibold text-white tracking-tight leading-snug break-words">
-            {task.title}
-          </h4>
-
           {/* Description */}
           {task.description && (
-            <p className="text-[11px] text-carbon-400 mt-1 line-clamp-2 leading-relaxed">
+            <p className="text-[11px] text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
               {task.description}
             </p>
           )}
 
-          {/* Card Footer */}
-          <div className="flex items-center justify-between mt-3 pt-2 border-t border-carbon-800 font-mono text-[10px]">
-            <span className="text-carbon-500">
-              SEQ_{task.order}
+          {/* Card Footer: Task ID & Assignee */}
+          <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-border-subtle text-[11px]">
+            <span className="text-[10px] text-zinc-500 font-mono">
+              #{task.id.slice(0, 5)}
             </span>
 
-            {/* Assignee / Operator Tag */}
+            {/* Assignee Avatar / Selector */}
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setShowAssigneeMenu(!showAssigneeMenu)}
-                className="flex items-center space-x-1.5 px-1.5 py-0.5 border border-carbon-700 bg-carbon-900/60 hover:bg-carbon-800 hover:border-carbon-600 transition text-carbon-300"
-                title={task.assignee ? `Assigned to ${task.assignee.name}` : 'Assign operator'}
+                className="flex items-center space-x-1 px-1.5 py-0.5 rounded hover:bg-white/[0.05] transition text-zinc-400 hover:text-zinc-200"
+                title={task.assignee ? `Assigned to ${task.assignee.name}` : 'Assign member'}
               >
                 {task.assignee ? (
-                  <>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-carbon-200 uppercase font-medium max-w-[90px] truncate">
+                  <div className="flex items-center space-x-1.5">
+                    <div className="w-4 h-4 rounded-full bg-gradient-to-tr from-indigo-500 to-indigo-600 text-[9px] text-white flex items-center justify-center font-medium uppercase shadow-sm">
+                      {task.assignee.name.charAt(0)}
+                    </div>
+                    <span className="text-[11px] text-zinc-300 max-w-[80px] truncate">
                       {task.assignee.name.split(' ')[0]}
                     </span>
-                  </>
+                  </div>
                 ) : (
-                  <>
-                    <UserPlus className="w-3 h-3 text-carbon-500" />
-                    <span className="text-carbon-400">UNASSIGNED</span>
-                  </>
+                  <div className="flex items-center space-x-1 text-zinc-500 hover:text-zinc-300">
+                    <UserPlus className="w-3 h-3" />
+                    <span className="text-[10px]">Assign</span>
+                  </div>
                 )}
               </button>
 
-              {/* Assignee popup */}
+              {/* Assignee Dropdown */}
               {showAssigneeMenu && (
-                <div className="absolute right-0 bottom-full mb-1 w-48 bg-carbon-900 border border-carbon-700 shadow-2xl py-1 z-50 font-mono">
-                  <div className="px-3 py-1 text-[9px] font-bold text-carbon-500 uppercase tracking-widest border-b border-carbon-800">
-                    ASSIGN OPERATOR
+                <div className="absolute right-0 bottom-full mb-1 w-44 bg-surface-850 border border-border-subtle rounded-lg shadow-xl py-1 z-50">
+                  <div className="px-2.5 py-1 text-[10px] font-medium text-zinc-400 border-b border-border-subtle">
+                    Assign member
                   </div>
                   {task.assignee && (
                     <button
@@ -97,9 +94,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                         onAssignTask(task.id, null);
                         setShowAssigneeMenu(false);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[11px] text-rose-400 hover:bg-rose-950/20 transition"
+                      className="w-full text-left px-2.5 py-1 text-xs text-rose-400 hover:bg-rose-500/10 transition"
                     >
-                      UNASSIGN
+                      Unassign
                     </button>
                   )}
                   {members.map((m) => (
@@ -109,11 +106,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                         onAssignTask(task.id, m.userId);
                         setShowAssigneeMenu(false);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[11px] text-carbon-200 hover:bg-carbon-800 flex items-center justify-between transition"
+                      className="w-full text-left px-2.5 py-1 text-xs text-zinc-300 hover:bg-white/[0.05] flex items-center justify-between transition"
                     >
                       <span className="truncate">{m.user.name}</span>
                       {task.assigneeId === m.userId && (
-                        <UserCheck className="w-3.5 h-3.5 text-cyan-400" />
+                        <UserCheck className="w-3.5 h-3.5 text-accent" />
                       )}
                     </button>
                   ))}

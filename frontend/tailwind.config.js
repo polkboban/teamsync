@@ -8,36 +8,33 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ['Panchang', 'sans-serif'],
-        sans: ['Switzer', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        sans: ['Geist', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+        mono: ['"Geist Mono"', 'ui-monospace', 'monospace'],
       },
       colors: {
-        carbon: {
-          950: '#06070a',
-          900: '#0b0d13',
-          850: '#10131c',
-          800: '#161925',
-          750: '#1d2130',
-          700: '#262b3e',
-          600: '#383f58',
-          500: '#525b7a',
-          400: '#7c86a6',
-          300: '#a6b0cf',
-          200: '#d0d7ed',
-          100: '#eef2fb',
+        canvas: '#09090b',
+        surface: {
+          50: '#f8fafc',
+          100: '#f1f5f9',
+          800: '#1e2025',
+          850: '#17181c',
+          900: '#111215',
+          950: '#09090b',
         },
-        telemetry: {
-          green: '#10b981',
-          cyan: '#06b6d4',
-          amber: '#f59e0b',
-          rose: '#f43f5e',
-          blue: '#3b82f6',
+        border: {
+          subtle: 'rgba(255, 255, 255, 0.07)',
+          hover: 'rgba(255, 255, 255, 0.14)',
+          active: 'rgba(255, 255, 255, 0.22)',
+        },
+        accent: {
+          DEFAULT: '#5e6ad2',
+          hover: '#4e5ac0',
+          subtle: 'rgba(94, 106, 210, 0.12)',
         }
       },
-      boxShadow: {
-        'glow-cyan': '0 0 25px -5px rgba(6, 182, 212, 0.25)',
-        'glow-green': '0 0 20px -4px rgba(16, 185, 129, 0.3)',
+      letterSpacing: {
+        tightest: '-0.025em',
+        tighter: '-0.015em',
       }
     },
   },

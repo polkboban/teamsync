@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { workspaceApi } from '../api/workspaces';
-import { UserPlus, ArrowRight, CheckCircle2, Radio } from 'lucide-react';
+import { UserPlus, ArrowRight, Check } from 'lucide-react';
 
 export const InvitePage: React.FC = () => {
   const { token } = useParams<{ token: string }>();
@@ -17,74 +17,66 @@ export const InvitePage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       await workspaceApi.acceptInvite(token);
-      navigate('/');
+      navigate('/app');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'TOKEN_INVALID_OR_EXPIRED // CONTACT ADMIN');
+      setError(err.response?.data?.error || 'Invalid or expired invitation link');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-carbon-950 flex flex-col justify-center items-center px-4 py-12 relative bg-telemetry-grid font-sans">
-      <div className="w-full max-w-md bg-carbon-900 border border-carbon-750 p-8 shadow-2xl text-center">
-        <div className="flex items-center justify-between pb-3 mb-5 border-b border-carbon-800 font-mono text-[10px] text-carbon-500 uppercase tracking-widest">
-          <span className="flex items-center space-x-1.5">
-            <Radio className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-            <span className="text-carbon-300 font-semibold">TOKEN_VERIFICATION // GATEWAY</span>
-          </span>
-          <span className="text-emerald-400">ACTIVE</span>
+    <div className="min-h-screen bg-canvas flex flex-col justify-center items-center px-4 py-12 relative font-sans">
+      <div className="w-full max-w-sm bg-surface-900 border border-border-subtle rounded-xl p-7 shadow-xl text-center">
+        <div className="w-10 h-10 rounded-full bg-surface-850 border border-border-subtle text-accent flex items-center justify-center mx-auto mb-3">
+          <UserPlus className="w-5 h-5" />
         </div>
 
-        <div className="w-12 h-12 bg-carbon-800 border border-carbon-700 text-cyan-400 flex items-center justify-center mx-auto mb-4">
-          <UserPlus className="w-6 h-6" />
-        </div>
-
-        <h2 className="font-display font-bold text-lg text-white uppercase tracking-wider">
-          WORKSPACE ACCESS INVITATION
+        <h2 className="text-lg font-semibold text-white tracking-tight">
+          Workspace Invitation
         </h2>
-        <p className="font-mono text-xs text-carbon-400 mt-2 leading-relaxed uppercase">
-          SECURITY PROTOCOL: JOIN WORKSPACE DISPATCH AS VERIFIED OPERATOR
+        <p className="text-xs text-zinc-400 mt-1">
+          You've been invited to collaborate with your team on TeamSync.
         </p>
 
         {error && (
-          <div className="mt-4 p-3 bg-rose-950/30 border border-rose-800/80 font-mono text-xs text-rose-300 uppercase">
-            // ERR: {error}
+          <div className="mt-4 p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-md text-xs text-rose-300">
+            {error}
           </div>
         )}
 
         {!user ? (
-          <div className="mt-6 space-y-3 font-mono">
-            <p className="text-[11px] text-carbon-400 uppercase">
-              AUTHENTICATION REQUIRED TO ACCEPT INVITATION TOKEN:
+          <div className="mt-5 space-y-2.5">
+            <p className="text-xs text-zinc-400">
+              Sign in or create an account to accept:
             </p>
             <Link
               to="/login"
-              className="w-full py-2.5 px-4 bg-white hover:bg-carbon-100 text-carbon-950 text-xs font-bold uppercase tracking-wider transition flex items-center justify-center space-x-2"
+              className="w-full py-2 px-3 bg-white hover:bg-zinc-200 text-zinc-950 text-xs font-medium rounded-md transition flex items-center justify-center space-x-1.5 shadow-sm"
             >
-              <span>AUTHENTICATE TO JOIN</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>Sign in to accept</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         ) : (
-          <div className="mt-6 space-y-4 font-mono">
-            <div className="p-3 bg-carbon-850 border border-carbon-750 text-left flex items-center space-x-3">
-              <div className="w-7 h-7 bg-cyan-600 text-carbon-950 flex items-center justify-center text-xs font-bold uppercase font-display">
+          <div className="mt-5 space-y-3">
+            <div className="p-2.5 bg-surface-850 border border-border-subtle rounded-lg text-left flex items-center space-x-2.5">
+              <div className="w-6 h-6 rounded-full bg-zinc-700 text-white flex items-center justify-center text-xs font-medium uppercase">
                 {user.name.charAt(0)}
               </div>
               <div className="truncate">
-                <div className="text-xs font-bold text-white uppercase tracking-tight">{user.name}</div>
-                <div className="text-[10px] text-carbon-400">{user.email}</div>
+                <div className="text-xs font-medium text-zinc-200 truncate">{user.name}</div>
+                <div className="text-[11px] text-zinc-500 truncate">{user.email}</div>
               </div>
             </div>
 
             <button
               onClick={handleAccept}
               disabled={isLoading}
-              className="w-full py-2.5 px-4 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-carbon-950 text-xs font-bold uppercase tracking-wider transition flex items-center justify-center space-x-2 shadow-glow-cyan"
+              className="w-full py-2 px-3 bg-white hover:bg-zinc-200 disabled:opacity-50 text-zinc-950 text-xs font-medium rounded-md transition flex items-center justify-center space-x-1.5 shadow-sm"
             >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>{isLoading ? 'ENROLLING...' : 'ACCEPT & JOIN DISPATCH'}</span>
+              <Check className="w-3.5 h-3.5 text-emerald-600" />
+              <span>{isLoading ? 'Joining...' : 'Accept & join workspace'}</span>
             </button>
           </div>
         )}
