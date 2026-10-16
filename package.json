@@ -1,0 +1,11 @@
+{
+  "name": "teamsync",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TeamSync – A Production-Ready Collaboration Platform",
+  "scripts": {
+    "dev:backend": "npm --prefix ts-backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build"
+  }
+}
