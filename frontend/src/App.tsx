@@ -74,6 +74,14 @@ export const App: React.FC = () => {
                 }
               />
               <Route
+                path="/app/boards/:boardId"
+                element={
+                  <ProtectedRoute>
+                    <BoardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/login"
                 element={
                   <PublicOnlyRoute>

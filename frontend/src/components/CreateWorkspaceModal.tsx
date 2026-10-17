@@ -38,36 +38,39 @@ export const CreateWorkspaceModal: React.FC<CreateWorkspaceModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150 font-sans">
-      <div className="bg-surface-900 border border-border-subtle rounded-xl w-full max-w-md p-6 shadow-2xl relative">
-        <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150 font-jost">
+      <div
+        data-ui="modal"
+        className="bg-graphite-surface rounded-xl w-full max-w-md p-6 relative border border-graphite-bg"
+      >
+        <div data-ui="modal-header" className="flex items-center justify-between pb-3 border-b border-graphite-bg">
           <div className="flex items-center space-x-2.5">
-            <div className="w-7 h-7 rounded-md bg-white/[0.04] border border-border-subtle flex items-center justify-center text-zinc-300">
-              <Layers className="w-3.5 h-3.5" />
+            <div className="w-8 h-8 rounded-lg bg-graphite-bg flex items-center justify-center text-graphite-orange">
+              <Layers className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white tracking-tight">
+              <h3 className="text-sm font-bold text-graphite-ink tracking-tight">
                 Create Workspace
               </h3>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-zinc-400 hover:text-white hover:bg-white/[0.05] transition"
+            className="p-1 rounded text-graphite-muted hover:text-graphite-ink hover:bg-graphite-bg transition"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {error && (
-          <div className="mt-4 p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-lg text-xs text-rose-300">
+          <div className="mt-4 p-3 bg-rose-950/40 text-rose-300 rounded-lg text-xs font-medium">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+            <label className="block text-xs font-bold text-graphite-muted mb-1.5 uppercase">
               Workspace name
             </label>
             <input
@@ -77,20 +80,20 @@ export const CreateWorkspaceModal: React.FC<CreateWorkspaceModalProps> = ({
               onChange={(e) => setName(e.target.value)}
               required
               autoFocus
-              className="w-full bg-surface-850 border border-border-subtle focus:border-accent rounded-lg px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none transition"
+              className="w-full bg-graphite-bg text-graphite-ink rounded-lg px-4 py-2.5 text-xs placeholder-graphite-muted focus:outline-none focus:ring-2 focus:ring-graphite-orange transition"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1.5">
-              Description <span className="text-zinc-500 font-normal">(optional)</span>
+            <label className="block text-xs font-bold text-graphite-muted mb-1.5 uppercase">
+              Description <span className="text-graphite-muted font-normal">(optional)</span>
             </label>
             <textarea
               placeholder="What is this workspace for?"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full bg-surface-850 border border-border-subtle focus:border-accent rounded-lg px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none resize-none transition"
+              className="w-full bg-graphite-bg text-graphite-ink rounded-lg px-4 py-2.5 text-xs placeholder-graphite-muted focus:outline-none focus:ring-2 focus:ring-graphite-orange resize-none transition"
             />
           </div>
 
@@ -98,14 +101,14 @@ export const CreateWorkspaceModal: React.FC<CreateWorkspaceModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/[0.05] rounded-lg transition"
+              className="px-4 py-2 text-xs font-bold text-graphite-muted hover:text-graphite-ink hover:bg-graphite-bg rounded-lg transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading || !name.trim()}
-              className="px-3.5 py-1.5 text-xs font-medium bg-accent hover:bg-accent-hover disabled:opacity-50 text-white rounded-lg transition shadow-sm shadow-accent/20"
+              className="px-5 py-2.5 text-xs font-bold bg-graphite-orange hover:opacity-90 active:scale-[0.98] disabled:opacity-50 text-graphite-fieldInk rounded-lg transition"
             >
               {isLoading ? 'Creating...' : 'Create workspace'}
             </button>

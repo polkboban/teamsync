@@ -179,3 +179,75 @@ export const assignTask = async (req: AuthRequest, res: Response): Promise<void>
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const updateTask = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { title, description } = req.body;
+    const userId = req.userId!;
+
+    const task = await prisma.task.findUnique({
+      where: { id },
+      include: {
+        list: {
+          include: { board: { include: { workspace: { include: { members: { where: { userId } } } } } } }
+        }
+      }
+    });
+
+    if (!task || task.list.board.workspace.members.length === 0) {
+      res.status(403).json({ error: 'Access denied: Cannot edit this task' });
+      return;
+    }
+
+    const updatedTask = await prisma.task.update({
+      where: { id },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(description !== undefined && { description }),
+      },
+      include: {
+        assignee: { select: { id: true, name: true, email: true } },
+      }
+    });
+
+    const boardId = task.list.board.id;
+    getSocket().to(`board:${boardId}`).emit('task:updated', { task: updatedTask });
+
+    res.status(200).json({ task: updatedTask });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const deleteTask = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const userId = req.userId!;
+
+    const task = await prisma.task.findUnique({
+      where: { id },
+      include: {
+        list: {
+          include: { board: { include: { workspace: { include: { members: { where: { userId } } } } } } }
+        }
+      }
+    });
+
+    if (!task || task.list.board.workspace.members.length === 0) {
+      res.status(403).json({ error: 'Access denied: Cannot delete this task' });
+      return;
+    }
+
+    const boardId = task.list.board.id;
+    await prisma.task.delete({ where: { id } });
+
+    getSocket().to(`board:${boardId}`).emit('task:deleted', { taskId: id });
+
+    res.status(200).json({ message: 'Task deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

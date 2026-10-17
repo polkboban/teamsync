@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import type { Workspace } from '../types';
-import { Bell, LogOut, Check, UserPlus, ChevronDown, Layers, Plus } from 'lucide-react';
+import { Bell, LogOut, Check, UserPlus, ChevronDown, Plus } from 'lucide-react';
 
 interface NavbarProps {
   currentWorkspace: Workspace | null;
@@ -26,37 +27,34 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
   return (
-    <header className="h-12 bg-surface-900/90 backdrop-blur-md border-b border-border-subtle flex items-center justify-between px-4 sticky top-0 z-30 select-none">
+    <header data-ui="navbar" className="h-14 bg-graphite-surface border-b border-graphite-bg flex items-center justify-between px-4 sticky top-0 z-30 select-none font-jost">
       {/* Left: Brand & Workspace Selector */}
       <div className="flex items-center space-x-3 sm:space-x-4">
         {/* Logo */}
-        <div className="flex items-center space-x-2 text-white">
-          <div className="w-6 h-6 rounded-md bg-accent flex items-center justify-center text-white shadow-sm">
-            <Layers className="w-3.5 h-3.5" />
-          </div>
-          <span className="font-semibold text-sm tracking-tight text-white hidden sm:inline">
-            TeamSync
+        <Link to="/" className="flex items-center space-x-2 text-graphite-ink hover:opacity-90 transition">
+          <span className="font-jost text-lg font-bold tracking-tight text-graphite-ink">
+            TEAMSYNC
           </span>
-        </div>
+        </Link>
 
-        <span className="text-zinc-700 hidden sm:inline">/</span>
+        <span className="text-graphite-muted hidden sm:inline">/</span>
 
         {/* Workspace Dropdown */}
         <div className="relative">
           <button
             onClick={() => setShowWsDropdown(!showWsDropdown)}
-            className="flex items-center space-x-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/[0.05] transition"
+            className="flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-graphite-bg text-graphite-ink hover:bg-graphite-elevated transition"
           >
-            <span className="max-w-[140px] truncate">
+            <span className="max-w-[150px] truncate">
               {currentWorkspace ? currentWorkspace.name : 'Select workspace'}
             </span>
-            <ChevronDown className="w-3.5 h-3.5 text-zinc-500" />
+            <ChevronDown className="w-3.5 h-3.5 text-graphite-muted" />
           </button>
 
           {showWsDropdown && (
-            <div className="absolute left-0 mt-1.5 w-56 bg-surface-850 border border-border-subtle rounded-lg shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
-              <div className="px-3 py-1.5 text-[11px] font-medium text-zinc-400">
-                Workspaces
+            <div data-ui="dropdown" className="absolute left-0 mt-2 w-64 bg-graphite-surface border border-graphite-bg rounded-lg py-1 z-50 animate-in fade-in duration-100">
+              <div className="px-3 py-2 text-[11px] font-bold text-graphite-muted">
+                Your Workspaces
               </div>
               <div className="max-h-56 overflow-y-auto">
                 {workspaces.map((ws) => (
@@ -66,25 +64,27 @@ export const Navbar: React.FC<NavbarProps> = ({
                       onSelectWorkspace(ws);
                       setShowWsDropdown(false);
                     }}
-                    className={`w-full text-left px-3 py-1.5 text-xs flex items-center justify-between hover:bg-white/[0.05] transition ${
-                      currentWorkspace?.id === ws.id ? 'text-accent font-medium' : 'text-zinc-300'
+                    className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-graphite-bg transition ${
+                      currentWorkspace?.id === ws.id
+                        ? 'text-graphite-orange font-bold bg-graphite-bg/50'
+                        : 'text-graphite-ink'
                     }`}
                   >
                     <span className="truncate">{ws.name}</span>
-                    {currentWorkspace?.id === ws.id && <Check className="w-3.5 h-3.5 text-accent shrink-0" />}
+                    {currentWorkspace?.id === ws.id && <Check className="w-4 h-4 text-graphite-orange shrink-0" />}
                   </button>
                 ))}
               </div>
-              <div className="border-t border-border-subtle my-1" />
+              <div data-ui="divider" className="border-t border-graphite-bg my-1" />
               <button
                 onClick={() => {
                   setShowWsDropdown(false);
                   onOpenCreateWorkspace();
                 }}
-                className="w-full text-left px-3 py-1.5 text-xs text-zinc-400 hover:text-white hover:bg-white/[0.05] flex items-center space-x-1.5 transition"
+                className="w-full text-left px-3 py-2 text-xs text-graphite-muted hover:text-graphite-ink hover:bg-graphite-bg flex items-center space-x-2 transition font-bold"
               >
-                <Plus className="w-3.5 h-3.5 text-zinc-500" />
-                <span>Create workspace</span>
+                <Plus className="w-4 h-4 text-graphite-orange" />
+                <span>+ Create workspace</span>
               </button>
             </div>
           )}
@@ -93,27 +93,29 @@ export const Navbar: React.FC<NavbarProps> = ({
         {currentWorkspace && (
           <button
             onClick={onOpenInvite}
-            className="hidden md:flex items-center space-x-1 px-2 py-1 text-xs text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.05] rounded-md transition"
+            className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold text-graphite-muted hover:text-graphite-ink hover:bg-graphite-bg rounded-lg transition"
           >
-            <UserPlus className="w-3.5 h-3.5" />
+            <UserPlus className="w-3.5 h-3.5 text-graphite-orange" />
             <span>Invite</span>
           </button>
         )}
       </div>
 
-      {/* Right: Real-time Indicator, Notifications, User Menu */}
-      <div className="flex items-center space-x-2.5">
-        {/* Real-time Indicator */}
+      {/* Right: Socket Status, Notifications, Profile */}
+      <div className="flex items-center space-x-3">
+        {/* Socket Status Indicator */}
         <div
-          className="flex items-center space-x-1.5 px-2 py-0.5 rounded-full text-[11px] text-zinc-400 border border-border-subtle bg-white/[0.02]"
-          title={isConnected ? 'Connected in real time' : 'Reconnecting...'}
+          className="flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-bold bg-graphite-bg"
+          title={isConnected ? 'WebSocket connected' : 'Reconnecting...'}
         >
           <span
-            className={`w-1.5 h-1.5 rounded-full ${
-              isConnected ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-amber-400'
+            className={`w-2 h-2 rounded-full ${
+              isConnected ? 'bg-emerald-400' : 'bg-amber-400'
             }`}
           />
-          <span className="hidden sm:inline font-normal">{isConnected ? 'Live' : 'Syncing'}</span>
+          <span className="hidden sm:inline text-graphite-muted text-[11px]">
+            {isConnected ? 'Socket Live' : 'Syncing'}
+          </span>
         </div>
 
         {/* Notifications */}
@@ -123,37 +125,37 @@ export const Navbar: React.FC<NavbarProps> = ({
               setShowNotifications(!showNotifications);
               if (showNotifications) clearNotifications();
             }}
-            className="p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-white/[0.05] transition relative"
+            className="p-2 rounded-lg bg-graphite-bg text-graphite-muted hover:text-graphite-ink hover:bg-graphite-elevated transition relative"
             title="Notifications"
           >
             <Bell className="w-4 h-4" />
             {notifications.length > 0 && (
-              <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full ring-2 ring-surface-900" />
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-graphite-orange rounded-full ring-2 ring-graphite-surface" />
             )}
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-1.5 w-80 bg-surface-850 border border-border-subtle rounded-lg shadow-xl z-50 overflow-hidden">
-              <div className="p-3 border-b border-border-subtle flex items-center justify-between">
-                <span className="text-xs font-medium text-zinc-200">Notifications</span>
+            <div data-ui="dropdown" className="absolute right-0 mt-2 w-80 bg-graphite-surface border border-graphite-bg rounded-lg z-50 overflow-hidden">
+              <div data-ui="popover-header" className="p-3 border-b border-graphite-bg flex items-center justify-between">
+                <span className="text-xs font-bold text-graphite-ink">Live Notifications</span>
                 {notifications.length > 0 && (
                   <button
                     onClick={clearNotifications}
-                    className="text-[11px] text-zinc-400 hover:text-white transition"
+                    className="text-[11px] font-bold text-graphite-orange hover:underline transition"
                   >
-                    Clear
+                    Clear all
                   </button>
                 )}
               </div>
-              <div className="max-h-64 overflow-y-auto divide-y divide-border-subtle text-xs">
+              <div data-ui="list" className="max-h-64 overflow-y-auto divide-y divide-graphite-bg text-xs">
                 {notifications.length === 0 ? (
-                  <div className="p-4 text-center text-zinc-500">No new notifications</div>
+                  <div className="p-6 text-center text-graphite-muted">No new notifications</div>
                 ) : (
                   notifications.map((n, idx) => (
-                    <div key={idx} className="p-3 hover:bg-white/[0.02] transition">
-                      <p className="font-medium text-zinc-200">{n.title}</p>
-                      <p className="text-zinc-400 text-[11px] mt-0.5">{n.message}</p>
-                      <span className="text-[10px] text-zinc-500 mt-1 block">
+                    <div key={idx} className="p-3 hover:bg-graphite-bg transition">
+                      <p className="font-bold text-graphite-ink">{n.title}</p>
+                      <p className="text-graphite-muted text-xs mt-0.5">{n.message}</p>
+                      <span className="text-[10px] text-graphite-muted mt-1 block">
                         {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
@@ -164,26 +166,26 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* User Profile */}
+        {/* User Menu */}
         <div className="relative">
           <button
             onClick={() => setShowUserDropdown(!showUserDropdown)}
-            className="flex items-center space-x-2 p-1 rounded-full hover:bg-white/[0.05] transition"
+            className="flex items-center space-x-2 p-1 rounded-lg hover:bg-graphite-bg transition"
           >
-            <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-zinc-700 to-zinc-600 text-white flex items-center justify-center text-[11px] font-medium shadow-sm">
+            <div className="w-7 h-7 rounded-lg bg-graphite-elevated text-graphite-ink flex items-center justify-center text-xs font-bold">
               {user?.name?.charAt(0) || 'U'}
             </div>
           </button>
 
           {showUserDropdown && (
-            <div className="absolute right-0 mt-1.5 w-48 bg-surface-850 border border-border-subtle rounded-lg shadow-xl py-1 z-50">
-              <div className="px-3 py-2 border-b border-border-subtle">
-                <p className="text-xs font-medium text-zinc-200 truncate">{user?.name}</p>
-                <p className="text-[11px] text-zinc-400 truncate">{user?.email}</p>
+            <div data-ui="dropdown" className="absolute right-0 mt-2 w-52 bg-graphite-surface border border-graphite-bg rounded-lg py-1 z-50">
+              <div data-ui="popover-header" className="px-3 py-2 border-b border-graphite-bg">
+                <p className="text-xs font-bold text-graphite-ink truncate">{user?.name}</p>
+                <p className="text-[11px] text-graphite-muted truncate">{user?.email}</p>
               </div>
               <button
                 onClick={logout}
-                className="w-full text-left px-3 py-1.5 text-xs text-rose-400 hover:bg-rose-500/10 flex items-center space-x-2 transition"
+                className="w-full text-left px-3 py-2 text-xs font-bold text-rose-400 hover:bg-rose-950/20 flex items-center space-x-2 transition"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Log out</span>

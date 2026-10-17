@@ -8,11 +8,23 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        jost: ['Jost', 'sans-serif'],
         sans: ['Geist', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
         mono: ['"Geist Mono"', 'ui-monospace', 'monospace'],
       },
       colors: {
         canvas: '#09090b',
+        // Graphite & Safety Orange palette (from design-taste-frontend direction)
+        graphite: {
+          bg: '#18191b',
+          surface: '#222427',
+          elevated: '#2d3035',
+          ink: '#eff0f1',
+          muted: '#9c9ea3',
+          orange: '#ff4a1f',
+          field: '#eff0f1',
+          fieldInk: '#18191b',
+        },
         surface: {
           50: '#f8fafc',
           100: '#f1f5f9',

@@ -16,4 +16,13 @@ export const taskApi = {
     const res = await api.patch<{ task: Task }>(`/tasks/${taskId}/assign`, { assigneeId });
     return res.data.task;
   },
+
+  updateTask: async (taskId: string, data: { title?: string; description?: string }): Promise<Task> => {
+    const res = await api.patch<{ task: Task }>(`/tasks/${taskId}`, data);
+    return res.data.task;
+  },
+
+  deleteTask: async (taskId: string): Promise<void> => {
+    await api.delete(`/tasks/${taskId}`);
+  },
 };

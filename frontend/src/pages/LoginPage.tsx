@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Layers, Sparkles, ArrowRight } from 'lucide-react';
+import { Sparkles, ArrowRight } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const { login, demoLogin } = useAuth();
@@ -40,110 +40,132 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-canvas flex flex-col justify-center items-center px-4 py-12 relative font-sans">
-      {/* Subtle radial ambient highlight */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] h-[320px] bg-accent/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-svh bg-graphite-bg text-graphite-ink font-jost selection:bg-graphite-orange selection:text-graphite-fieldInk p-2 sm:p-3 flex flex-col justify-between space-y-2">
+      {/* Top Nav Tile */}
+      <nav className="grid grid-cols-12 gap-2">
+        <div className="col-span-6 sm:col-span-3 h-14 bg-graphite-surface rounded-lg flex items-center px-4">
+          <Link to="/" className="font-jost text-lg font-bold tracking-tight text-graphite-ink">
+            TEAMSYNC
+          </Link>
+        </div>
 
-      {/* Back to Home Link */}
-      <div className="w-full max-w-sm mb-4 relative z-10">
-        <Link
-          to="/"
-          className="inline-flex items-center space-x-1 text-xs text-zinc-400 hover:text-white transition"
-        >
-          <span>← Back to TeamSync</span>
-        </Link>
-      </div>
+        <div className="col-span-6 sm:col-span-9 h-14 bg-graphite-surface rounded-lg flex items-center justify-end px-4 sm:px-6">
+          <Link
+            to="/"
+            className="text-xs sm:text-sm font-medium text-graphite-muted hover:text-graphite-ink transition"
+          >
+            ← Back to Overview
+          </Link>
+        </div>
+      </nav>
 
-      {/* Card container */}
-      <div className="w-full max-w-sm bg-surface-900 border border-border-subtle rounded-xl p-7 shadow-xl relative z-10">
-        {/* Brand Header */}
-        <div className="text-center mb-6">
-          <div className="w-9 h-9 rounded-lg bg-accent text-white flex items-center justify-center mx-auto mb-3 shadow-md shadow-accent/20">
-            <Layers className="w-5 h-5" />
+      {/* Main Board of Fitted Tiles */}
+      <main className="max-w-4xl mx-auto w-full grid grid-cols-1 md:grid-cols-12 gap-2 my-auto py-4">
+        {/* Left: Brand & Gateway Info Tile */}
+        <div className="md:col-span-5 bg-graphite-field text-graphite-fieldInk rounded-lg p-6 sm:p-8 flex flex-col justify-between min-h-[380px]">
+          <div>
+            <span className="text-xs font-bold tracking-normal text-graphite-fieldInk">
+              ENGINEERING WORKSPACE GATEWAY
+            </span>
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter mt-4 leading-none text-graphite-fieldInk">
+              ACCESS BOARDS.
+            </h1>
           </div>
-          <h1 className="text-lg font-semibold text-white tracking-tight">
-            Log in to TeamSync
-          </h1>
-          <p className="text-xs text-zinc-400 mt-1">
-            Real-time collaboration for engineering teams
+
+          <div className="space-y-2 my-6">
+            <p className="text-sm font-medium leading-relaxed text-graphite-fieldInk opacity-90">
+              Sign in to your organization workspace. Multi-tenant authorization and real-time WebSocket state synchronization active.
+            </p>
+          </div>
+
+          <div className="text-xs font-bold text-graphite-fieldInk opacity-80">
+            SYSTEM · REDIS 7 & POSTGRESQL 16
+          </div>
+        </div>
+
+        {/* Right: Auth Form Tile */}
+        <div className="md:col-span-7 bg-graphite-surface rounded-lg p-6 sm:p-8 flex flex-col justify-between min-h-[380px]">
+          {/* 1-Click Instant Demo Pass */}
+          <button
+            type="button"
+            onClick={handleDemoLogin}
+            disabled={isDemoLoading || isLoading}
+            className="w-full p-4 rounded-lg bg-graphite-orange text-graphite-fieldInk hover:opacity-90 active:scale-[0.98] transition flex items-center justify-between text-left mb-5"
+          >
+            <div className="flex items-center space-x-3">
+              <Sparkles className="w-5 h-5 shrink-0" />
+              <div>
+                <div className="text-xs font-bold">1-CLICK DEMO ACCESS</div>
+                <div className="text-sm font-bold">
+                  {isDemoLoading ? 'Authenticating demo user...' : 'Explore workspace immediately'}
+                </div>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 shrink-0 ml-2" />
+          </button>
+
+          <div className="text-xs text-graphite-muted font-medium mb-3">
+            Or continue with email credentials
+          </div>
+
+          {error && (
+            <div className="mb-4 p-3 bg-rose-950/40 text-rose-300 rounded-lg text-xs font-medium">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div>
+              <label className="block text-xs font-bold text-graphite-ink mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@company.com"
+                className="w-full bg-graphite-bg text-graphite-ink rounded-lg px-4 py-2.5 text-xs placeholder-graphite-muted focus:outline-none focus:ring-2 focus:ring-graphite-orange transition"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-graphite-ink mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-graphite-bg text-graphite-ink rounded-lg px-4 py-2.5 text-xs placeholder-graphite-muted focus:outline-none focus:ring-2 focus:ring-graphite-orange transition"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading || isDemoLoading}
+              className="w-full py-3 bg-graphite-ink text-graphite-bg font-jost font-bold text-xs sm:text-sm rounded-lg hover:opacity-90 active:scale-[0.98] transition mt-2"
+            >
+              {isLoading ? 'Signing in...' : 'Sign in to Workspace'}
+            </button>
+          </form>
+
+          <p className="text-xs text-graphite-muted text-center mt-5">
+            Need an organization workspace?{' '}
+            <Link to="/register" className="text-graphite-orange font-bold hover:underline ml-1">
+              Create account
+            </Link>
           </p>
         </div>
+      </main>
 
-        {/* 1-Click Demo Login */}
-        <button
-          type="button"
-          onClick={handleDemoLogin}
-          disabled={isDemoLoading || isLoading}
-          className="w-full mb-5 py-2 px-3 bg-white/[0.04] hover:bg-white/[0.08] border border-border-subtle hover:border-border-hover rounded-lg transition flex items-center justify-between text-left group"
-        >
-          <div className="flex items-center space-x-2.5">
-            <Sparkles className="w-3.5 h-3.5 text-accent" />
-            <div>
-              <div className="text-xs font-medium text-zinc-200">Demo User Pass</div>
-              <div className="text-[11px] text-zinc-500">Explore instantly with 1-click</div>
-            </div>
-          </div>
-          <ArrowRight className="w-3.5 h-3.5 text-zinc-500 group-hover:translate-x-0.5 group-hover:text-zinc-300 transition" />
-        </button>
-
-        <div className="relative flex items-center justify-center mb-5">
-          <div className="border-t border-border-subtle w-full" />
-          <span className="bg-surface-900 px-2 text-[11px] font-medium text-zinc-500 absolute">
-            or continue with email
-          </span>
-        </div>
-
-        {error && (
-          <div className="mb-4 p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-md text-xs text-rose-300">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-3.5">
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@company.com"
-              className="w-full bg-surface-950 border border-border-subtle rounded-md px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-accent/80 transition"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-zinc-300 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full bg-surface-950 border border-border-subtle rounded-md px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-accent/80 transition"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading || isDemoLoading}
-            className="w-full py-2 px-3 bg-white hover:bg-zinc-200 disabled:opacity-50 text-zinc-950 text-xs font-medium rounded-md transition shadow-sm mt-1"
-          >
-            {isLoading ? 'Signing in...' : 'Sign in'}
-          </button>
-        </form>
-
-        <p className="text-center text-xs text-zinc-400 mt-5">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-white hover:underline font-medium ml-0.5">
-            Sign up
-          </Link>
-        </p>
-      </div>
+      {/* Footer Strip */}
+      <footer className="h-10 bg-graphite-surface rounded-lg px-4 flex items-center justify-between text-xs text-graphite-muted">
+        <span>TeamSync Authentication Protocol</span>
+        <span>All systems operational</span>
+      </footer>
     </div>
   );
 };

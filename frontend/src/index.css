@@ -31,3 +31,31 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.22);
 }
+
+/* Motion tokens and reveal helpers */
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scroll-reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 700ms var(--ease-out), transform 800ms var(--ease-out);
+  }
+  .scroll-reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  .scroll-scale {
+    opacity: 0;
+    transform: scale(0.98) translateY(18px);
+    transition: opacity 700ms var(--ease-out), transform 800ms var(--ease-out);
+  }
+  .scroll-scale.is-in {
+    opacity: 1;
+    transform: none;
+  }
+}

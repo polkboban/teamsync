@@ -1,30 +1,150 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import {
-  Layers,
-  Sparkles,
-  ArrowRight,
-  Zap,
-  Users,
-  Database,
-  Cpu,
-  GitBranch,
-  Server,
-  Clock,
-  Activity,
-  Code2,
-  Check,
-  ChevronRight,
-  Kanban,
-  Radio
-} from 'lucide-react';
+import { ArrowRight, Sparkles, Plus, Radio, MoveRight } from 'lucide-react';
+
+interface TaskItem {
+  id: string;
+  number: string;
+  title: string;
+  priority: 'Urgent' | 'High' | 'Medium' | 'Low';
+  column: 'backlog' | 'in_progress' | 'done';
+  assignee: string;
+  assigneeInitials: string;
+  time: string;
+}
 
 export const LandingPage: React.FC = () => {
   const { user, demoLogin } = useAuth();
   const navigate = useNavigate();
   const [isDemoLoading, setIsDemoLoading] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  // Interactive Live Kanban Studio State
+  const [activeFilter, setActiveFilter] = useState<'all' | 'in_progress' | 'urgent'>('all');
+  const [selectedTask, setSelectedTask] = useState<TaskItem | null>(null);
+  const [simulatedLiveEvent, setSimulatedLiveEvent] = useState<string | null>(null);
+  const [tasks, setTasks] = useState<TaskItem[]>([
+    {
+      id: '104',
+      number: '#104',
+      title: 'Write OpenAPI / Swagger REST contract specification',
+      priority: 'Low',
+      column: 'backlog',
+      assignee: 'Sarah Jenkins',
+      assigneeInitials: 'SJ',
+      time: 'Yesterday',
+    },
+    {
+      id: '105',
+      number: '#105',
+      title: 'Configure Redis sliding-window rate limiting on auth endpoints',
+      priority: 'Medium',
+      column: 'backlog',
+      assignee: 'Marcus Vance',
+      assigneeInitials: 'MV',
+      time: '2h ago',
+    },
+    {
+      id: '108',
+      number: '#108',
+      title: 'Multi-stage Docker Compose production image optimization',
+      priority: 'Low',
+      column: 'backlog',
+      assignee: 'Alex Chen',
+      assigneeInitials: 'AC',
+      time: '4h ago',
+    },
+    {
+      id: '102',
+      number: '#102',
+      title: 'Socket.IO room subscription & broadcast mesh',
+      priority: 'Urgent',
+      column: 'in_progress',
+      assignee: 'Alex Chen',
+      assigneeInitials: 'AC',
+      time: 'Just now',
+    },
+    {
+      id: '103',
+      number: '#103',
+      title: 'Redis 48-hour single-use workspace invitation tokens',
+      priority: 'High',
+      column: 'in_progress',
+      assignee: 'Marcus Vance',
+      assigneeInitials: 'MV',
+      time: '1h ago',
+    },
+    {
+      id: '100',
+      number: '#100',
+      title: 'Prisma PostgreSQL relational schema migrations & foreign keys',
+      priority: 'High',
+      column: 'done',
+      assignee: 'Alex Chen',
+      assigneeInitials: 'AC',
+      time: '1d ago',
+    },
+    {
+      id: '101',
+      number: '#101',
+      title: 'JWT authentication with bcrypt password hashing pipeline',
+      priority: 'Medium',
+      column: 'done',
+      assignee: 'Sarah Jenkins',
+      assigneeInitials: 'SJ',
+      time: '2d ago',
+    },
+    {
+      id: '99',
+      number: '#99',
+      title: 'Multi-tenant organization role clearance tiers (Owner/Admin/Member)',
+      priority: 'High',
+      column: 'done',
+      assignee: 'System Root',
+      assigneeInitials: 'SR',
+      time: '3d ago',
+    },
+  ]);
+
+  // Interactive Departure Board State
+  const [activeDispatchRow, setActiveDispatchRow] = useState<number>(2);
+
+  // Interactive Code/Architecture Tab
   const [activeArchTab, setActiveArchTab] = useState<'socket' | 'redis' | 'prisma'>('socket');
+
+  // Track scroll progress and trigger intersection observer reveals
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight > 0) {
+        setScrollProgress((window.scrollY / totalHeight) * 100);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // IntersectionObserver for staggered scroll reveals
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-in');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    const revealElements = document.querySelectorAll('.scroll-reveal, .scroll-scale');
+    revealElements.forEach((el) => observer.observe(el));
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+    };
+  }, []);
 
   const handleDemoClick = async () => {
     try {
@@ -39,633 +159,824 @@ export const LandingPage: React.FC = () => {
     }
   };
 
+  const handleSimulateMove = () => {
+    setTasks((prev) =>
+      prev.map((t) => {
+        if (t.id === '102') {
+          const nextCol = t.column === 'in_progress' ? 'done' : 'in_progress';
+          return { ...t, column: nextCol };
+        }
+        return t;
+      })
+    );
+    setSimulatedLiveEvent(
+      'WebSocket event: task #102 updated across 3 active peer sockets in 11ms via Redis Pub/Sub'
+    );
+    setTimeout(() => {
+      setSimulatedLiveEvent(null);
+    }, 4500);
+  };
+
+  const dispatchRows = [
+    {
+      id: 0,
+      event: 'task:moved',
+      target: 'Card #102 → In Progress',
+      author: 'Alex Chen',
+      time: '12ms',
+      status: 'SYNCED',
+      detail: 'Broadcasted to room:board_49 via Redis Pub/Sub. 3 sockets acknowledged payload.',
+    },
+    {
+      id: 1,
+      event: 'invite:token_created',
+      target: 'Workspace "Core Infra"',
+      author: 'Sarah Jenkins',
+      time: '4ms',
+      status: 'COMMITTED',
+      detail: 'Generated 32-byte cryptographic token. Written to Redis with EXPIRE 172800 (48h).',
+    },
+    {
+      id: 2,
+      event: 'presence:join',
+      target: 'Marcus Vance joined sprint-34',
+      author: 'Marcus Vance',
+      time: '7ms',
+      status: 'ONLINE',
+      detail: 'Peer connected via WebSocket transport. Room member count incremented to 3.',
+    },
+    {
+      id: 3,
+      event: 'task:comment_added',
+      target: 'PR #142 referenced in #104',
+      author: 'Alex Chen',
+      time: '18ms',
+      status: 'PERSISTED',
+      detail: 'Database transaction completed in PostgreSQL via Prisma. Notification emitted.',
+    },
+    {
+      id: 4,
+      event: 'workspace:role_granted',
+      target: 'Clearance promoted to ADMIN',
+      author: 'System Root',
+      time: '9ms',
+      status: 'VERIFIED',
+      detail: 'Role-based access clearance cache invalidated. JWT claims refreshed.',
+    },
+  ];
+
+  const filteredTasks = tasks.filter((t) => {
+    if (activeFilter === 'in_progress') return t.column === 'in_progress';
+    if (activeFilter === 'urgent') return t.priority === 'Urgent';
+    return true;
+  });
+
   return (
-    <div className="min-h-screen bg-canvas text-zinc-100 font-sans selection:bg-accent selection:text-white relative overflow-hidden">
-      {/* Subtle top ambient glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[360px] bg-accent/[0.08] blur-[120px] pointer-events-none rounded-full" />
+    <div className="min-h-svh bg-graphite-bg text-graphite-ink font-jost selection:bg-graphite-orange selection:text-graphite-fieldInk p-2 sm:p-3 space-y-2">
+      {/* Scroll Progress Bar at very top edge */}
+      <div
+        className="fixed top-0 left-0 h-1 bg-graphite-orange z-50 pointer-events-none transition-transform"
+        style={{ width: `${scrollProgress}%` }}
+      />
 
-      {/* Navigation Header */}
-      <nav className="sticky top-0 z-50 backdrop-blur-md bg-canvas/80 border-b border-border-subtle">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center space-x-6">
-            <Link to="/" className="flex items-center space-x-2.5">
-              <div className="w-7 h-7 rounded-md bg-accent flex items-center justify-center text-white shadow-sm shadow-accent/20">
-                <Layers className="w-4 h-4" />
-              </div>
-              <span className="font-semibold text-sm tracking-tight text-white">
-                TeamSync
-              </span>
-              <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/[0.06] text-[10px] text-zinc-400 font-mono">
-                v1.0
-              </span>
-            </Link>
-
-            <div className="hidden md:flex items-center space-x-5 text-xs text-zinc-400">
-              <a href="#features" className="hover:text-zinc-200 transition">
-                Features
-              </a>
-              <a href="#mockup" className="hover:text-zinc-200 transition">
-                Live Preview
-              </a>
-              <a href="#architecture" className="hover:text-zinc-200 transition">
-                Architecture
-              </a>
-              <a href="#stack" className="hover:text-zinc-200 transition">
-                Tech Stack
-              </a>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-3">
-            {user ? (
-              <Link
-                to="/app"
-                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-accent hover:bg-accent-hover text-white transition shadow-sm shadow-accent/25"
-              >
-                <span>Go to Workspace</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white transition"
-                >
-                  Sign in
-                </Link>
-                <button
-                  onClick={handleDemoClick}
-                  disabled={isDemoLoading}
-                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.06] hover:bg-white/[0.1] border border-border-subtle hover:border-border-hover text-zinc-200 transition"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-accent" />
-                  <span>{isDemoLoading ? 'Loading demo...' : 'Try Demo'}</span>
-                </button>
-                <Link
-                  to="/register"
-                  className="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-accent hover:bg-accent-hover text-white transition shadow-sm shadow-accent/25"
-                >
-                  <span>Get Started</span>
-                  <ChevronRight className="w-3 h-3" />
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="relative pt-16 pb-12 sm:pt-24 sm:pb-20 max-w-5xl mx-auto px-4 text-center">
-        {/* Real-time status badge */}
-        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-surface-900 border border-border-subtle text-xs text-zinc-300 shadow-sm mb-6 animate-in fade-in duration-300">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span className="font-medium text-[11px] sm:text-xs">
-            WebSocket Engine Active · Sub-15ms Sync
-          </span>
-          <span className="text-zinc-600">|</span>
-          <span className="text-[11px] text-zinc-400 font-mono">Redis 7 Pub/Sub</span>
-        </div>
-
-        {/* Primary Headline */}
-        <h1 className="text-4xl sm:text-6xl font-semibold tracking-tight text-white max-w-3xl mx-auto leading-[1.12]">
-          Real-time collaboration,{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-zinc-300 to-zinc-500">
-            engineered for speed.
-          </span>
-        </h1>
-
-        {/* Subhead */}
-        <p className="mt-5 text-sm sm:text-base text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-          A production-grade collaboration platform built with TypeScript, Node.js, PostgreSQL, and Redis.
-          Experience drag-and-drop Kanban boards, live presence, and multi-tenant workspaces.
-        </p>
-
-        {/* Call to action buttons */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <button
-            onClick={handleDemoClick}
-            disabled={isDemoLoading}
-            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-lg text-xs sm:text-sm font-medium bg-accent hover:bg-accent-hover text-white transition shadow-lg shadow-accent/25 hover:shadow-accent/40"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>{isDemoLoading ? 'Launching demo workspace...' : 'Launch Instant Demo (1-Click)'}</span>
-            <ArrowRight className="w-4 h-4 ml-1" />
-          </button>
-
-          <Link
-            to="/register"
-            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-lg text-xs sm:text-sm font-medium bg-surface-900 hover:bg-surface-850 border border-border-subtle hover:border-border-hover text-zinc-300 transition"
-          >
-            <span>Create Free Account</span>
+      {/* 1. TOP NAV BAR: FITTED TILES */}
+      <nav className="grid grid-cols-12 gap-2 sticky top-2 z-40">
+        <div className="col-span-3 sm:col-span-2 h-14 bg-graphite-surface rounded-lg flex items-center px-4">
+          <Link to="/" className="font-jost text-lg font-bold tracking-tight text-graphite-ink">
+            github.com/polkboban
           </Link>
         </div>
 
-        <p className="mt-3 text-[11px] text-zinc-500">
-          Zero setup required · Pre-seeded demo tasks & presence
-        </p>
+        <div className="col-span-5 sm:col-span-6 h-14 bg-graphite-surface rounded-lg flex items-center px-4 sm:px-8 space-x-6">
+          <a href="#studio" className="text-xs sm:text-sm font-medium text-graphite-muted hover:text-graphite-ink transition">
+            Live Studio
+          </a>
+          <a href="#showcase" className="text-xs sm:text-sm font-medium text-graphite-muted hover:text-graphite-ink transition">
+            Dispatch Board
+          </a>
+          <a href="#engine" className="text-xs sm:text-sm font-medium text-graphite-muted hover:text-graphite-ink transition">
+            Engine
+          </a>
+          <a href="#stats" className="text-xs sm:text-sm font-medium text-graphite-muted hover:text-graphite-ink transition">
+            Metrics
+          </a>
+        </div>
+
+        <div className="col-span-4 sm:col-span-4 h-14 flex items-center justify-end space-x-2">
+          {user ? (
+            <Link
+              to="/app"
+              className="h-14 px-5 bg-graphite-orange text-graphite-fieldInk font-bold text-xs sm:text-sm rounded-lg flex items-center space-x-2 hover:opacity-90 active:scale-[0.98] transition"
+            >
+              <span>Go to Workspace</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="h-14 px-4 bg-graphite-surface text-graphite-ink font-medium text-xs sm:text-sm rounded-lg hidden sm:flex items-center hover:bg-graphite-elevated transition"
+              >
+                Sign in
+              </Link>
+              <button
+                onClick={handleDemoClick}
+                disabled={isDemoLoading}
+                className="h-14 px-4 sm:px-6 bg-graphite-orange text-graphite-fieldInk font-bold text-xs sm:text-sm rounded-lg flex items-center space-x-2 hover:opacity-90 active:scale-[0.98] transition"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>{isDemoLoading ? 'Loading demo...' : 'Launch Demo'}</span>
+              </button>
+            </>
+          )}
+        </div>
+      </nav>
+
+      {/* 2. HERO: TWO-BY-TWO BOARD BLUEPRINT */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-2 pt-2">
+        {/* Name Tile in Light Ground */}
+        <div className="lg:col-span-6 bg-graphite-field text-graphite-fieldInk rounded-lg p-6 sm:p-10 flex flex-col justify-between min-h-[380px] sm:min-h-[440px] scroll-reveal">
+          <div>
+            <span className="font-jost text-xs sm:text-sm font-bold tracking-normal">
+              REAL-TIME COLLABORATION PLATFORM
+            </span>
+          </div>
+          <div>
+            <h1 className="font-jost text-7xl sm:text-8xl md:text-9xl font-bold tracking-tighter leading-none">
+              <span className="text-graphite">TEAM</span>
+              <span className="text-graphite-orange">SYNC</span>
+            </h1>
+          </div>
+        </div>
+
+        {/* Hero Interactive Mini Preview */}
+        <div data-ui="hero-preview" className="lg:col-span-6 bg-graphite-surface rounded-lg p-6 sm:p-8 flex flex-col justify-between min-h-[380px] sm:min-h-[440px] scroll-reveal">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-jost text-xl font-bold text-graphite-ink">Sprint 34 Dispatch</div>
+              <div className="text-xs text-graphite-muted">3 active teammates online in room:board_34</div>
+            </div>
+            <div className="flex space-x-1.5">
+              <span className="w-7 h-7 rounded bg-graphite-orange text-graphite-fieldInk text-xs font-bold flex items-center justify-center">AC</span>
+              <span className="w-7 h-7 rounded bg-graphite-elevated text-graphite-ink text-xs font-bold flex items-center justify-center">SJ</span>
+              <span className="w-7 h-7 rounded bg-graphite-elevated text-graphite-ink text-xs font-bold flex items-center justify-center">MV</span>
+            </div>
+          </div>
+
+          <div className="space-y-2 py-4">
+            <div className="p-3 rounded bg-graphite-bg flex items-center justify-between text-xs">
+              <div className="flex items-center space-x-2">
+                <span className="w-2 h-2 rounded-full bg-graphite-orange" />
+                <span className="font-bold text-graphite-ink">#102 Socket.IO room broadcast mesh</span>
+              </div>
+              <span className="px-2 py-0.5 rounded bg-graphite-surface text-graphite-orange font-bold text-[11px]">
+                Urgent
+              </span>
+            </div>
+            <div className="p-3 rounded bg-graphite-bg flex items-center justify-between text-xs">
+              <div className="flex items-center space-x-2">
+                <span className="w-2 h-2 rounded-full bg-graphite-muted" />
+                <span className="text-graphite-ink">#103 Redis 48h single-use workspace invite tokens</span>
+              </div>
+              <span className="px-2 py-0.5 rounded bg-graphite-surface text-graphite-muted font-bold text-[11px]">
+                High
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-xs">
+            <a href="#studio" className="font-jost font-bold text-graphite-orange hover:underline flex items-center space-x-1">
+              <span>Inspect full live board below</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </a>
+            <span className="text-graphite-muted">11ms socket latency</span>
+          </div>
+        </div>
+
+        {/* Bottom-Left: Large Statement Tile */}
+        <div className="lg:col-span-6 bg-graphite-surface rounded-lg p-6 sm:p-8 flex flex-col justify-between min-h-[200px] scroll-reveal">
+          <p className="font-jost text-xl sm:text-3xl font-medium text-graphite-ink leading-tight">
+            Zero polling. Sub-15 millisecond WebSocket synchronization across every connected peer.
+          </p>
+          <p className="text-xs sm:text-sm text-graphite-muted mt-4">
+            Engineered with Redis Pub/Sub, Node.js, and PostgreSQL for teams that ship software continuously.
+          </p>
+        </div>
+
+        {/* Bottom-Right Split: Spec Tile */}
+        <div className="lg:col-span-3 bg-graphite-elevated rounded-lg p-6 sm:p-8 flex flex-col justify-between min-h-[200px] scroll-reveal">
+          <div className="font-jost text-lg font-bold text-graphite-ink">
+            Multi-Tenant Workspaces
+          </div>
+          <div className="text-xs text-graphite-muted leading-relaxed">
+            Role-based clearance tiers for Owner, Admin, and Member. Ephemeral 48-hour Redis invite tokens.
+          </div>
+        </div>
+
+        {/* Bottom-Right Split: Action Tile */}
+        <div
+          onClick={handleDemoClick}
+          className="lg:col-span-3 bg-graphite-orange text-graphite-fieldInk rounded-lg p-6 sm:p-8 flex flex-col justify-between min-h-[200px] cursor-pointer hover:opacity-95 active:scale-[0.98] transition scroll-reveal"
+        >
+          <div className="font-jost text-xs font-bold">
+            1-CLICK DEMO
+          </div>
+          <div className="font-jost text-2xl font-bold leading-tight">
+            Test the live board right now.
+          </div>
+          <div className="flex items-center justify-between font-jost font-bold text-xs sm:text-sm">
+            <span>{isDemoLoading ? 'Starting demo...' : 'Instant access'}</span>
+            <ArrowRight className="w-5 h-5" />
+          </div>
+        </div>
       </section>
 
-      {/* Hero Interactive Mockup Showcase */}
-      <section id="mockup" className="max-w-5xl mx-auto px-4 pb-20">
-        <div className="relative rounded-xl border border-border-subtle bg-surface-900/90 shadow-2xl overflow-hidden backdrop-blur-sm">
-          {/* Top Window Chrome */}
-          <div className="h-10 px-4 bg-surface-850 border-b border-border-subtle flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 rounded-full bg-rose-500/80" />
-              <div className="w-3 h-3 rounded-full bg-amber-500/80" />
-              <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
-              <span className="ml-2 text-[11px] font-mono text-zinc-400">
-                teamsync.internal / workspace-production / sprint-34
+      {/* 3. PRACTICAL & PLEASANT APP REPRESENTATION: FULL LIVE KANBAN STUDIO (data-ui) */}
+      <section id="studio" className="pt-6 pb-2 scroll-scale">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between px-2 mb-3 gap-2">
+          <div>
+            <h2 className="font-jost text-2xl sm:text-4xl font-bold text-graphite-ink">
+              Interactive Kanban Studio
+            </h2>
+            <p className="text-xs sm:text-sm text-graphite-muted mt-1">
+              Click cards to inspect details, or trigger a simulated peer WebSocket mutation.
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleSimulateMove}
+              className="px-4 py-2 bg-graphite-elevated hover:bg-graphite-surface text-graphite-ink rounded font-jost font-bold text-xs flex items-center space-x-1.5 transition active:scale-[0.97]"
+            >
+              <Radio className="w-3.5 h-3.5 text-graphite-orange" />
+              <span>Simulate Peer Drag (#102)</span>
+            </button>
+            <button
+              onClick={handleDemoClick}
+              disabled={isDemoLoading}
+              className="px-4 py-2 bg-graphite-orange text-graphite-fieldInk rounded font-jost font-bold text-xs flex items-center space-x-1.5 hover:opacity-90 transition active:scale-[0.97]"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Open in Full App</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Live Studio Frame */}
+        <div data-ui="app-studio" className="bg-graphite-surface rounded-lg p-4 sm:p-6 space-y-4">
+          {/* Studio Window Chrome */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 gap-2">
+            <div className="flex items-center space-x-3">
+              <div className="flex space-x-1.5">
+                <span className="w-3 h-3 rounded-full bg-[#ff5f56]" />
+                <span className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
+                <span className="w-3 h-3 rounded-full bg-[#27c93f]" />
+              </div>
+              <span className="text-xs font-bold text-graphite-ink">
+                Acme Engineering / Core Sprint 34
               </span>
             </div>
 
-            {/* Simulated Live Avatars */}
+            {/* Filter pills & Real-time Indicator */}
             <div className="flex items-center space-x-2">
-              <span className="text-[10px] text-zinc-400 hidden sm:inline">3 online</span>
-              <div className="flex -space-x-1.5">
-                <div className="w-5 h-5 rounded-full bg-indigo-600 border border-surface-850 text-[9px] font-bold flex items-center justify-center text-white" title="Alex Chen (Lead)">
-                  AC
-                </div>
-                <div className="w-5 h-5 rounded-full bg-emerald-600 border border-surface-850 text-[9px] font-bold flex items-center justify-center text-white" title="Sarah Jenkins (Frontend)">
-                  SJ
-                </div>
-                <div className="w-5 h-5 rounded-full bg-amber-600 border border-surface-850 text-[9px] font-bold flex items-center justify-center text-white" title="Marcus Vance (DevOps)">
-                  MV
-                </div>
+              <div className="flex bg-graphite-bg rounded p-0.5 text-xs">
+                <button
+                  onClick={() => setActiveFilter('all')}
+                  className={`px-2.5 py-1 rounded transition ${activeFilter === 'all' ? 'bg-graphite-surface text-graphite-ink font-bold' : 'text-graphite-muted'}`}
+                >
+                  All ({tasks.length})
+                </button>
+                <button
+                  onClick={() => setActiveFilter('in_progress')}
+                  className={`px-2.5 py-1 rounded transition ${activeFilter === 'in_progress' ? 'bg-graphite-surface text-graphite-ink font-bold' : 'text-graphite-muted'}`}
+                >
+                  In Progress
+                </button>
+                <button
+                  onClick={() => setActiveFilter('urgent')}
+                  className={`px-2.5 py-1 rounded transition ${activeFilter === 'urgent' ? 'bg-graphite-surface text-graphite-ink font-bold' : 'text-graphite-muted'}`}
+                >
+                  Urgent
+                </button>
+              </div>
+
+              <div className="hidden md:flex items-center space-x-1.5 px-2.5 py-1 rounded bg-graphite-bg text-[11px] text-graphite-orange font-bold">
+                <span className="w-2 h-2 rounded-full bg-graphite-orange" />
+                <span>Socket Connected (11ms)</span>
               </div>
             </div>
           </div>
 
-          {/* Kanban Board Container Preview */}
-          <div className="p-4 sm:p-6 bg-surface-950/70 overflow-x-auto">
-            <div className="flex items-start space-x-4 min-w-[760px]">
-              {/* Column 1: Backlog */}
-              <div className="w-64 shrink-0 bg-surface-900 border border-border-subtle rounded-lg p-3">
-                <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-border-subtle">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs font-medium text-zinc-200">Backlog</span>
-                    <span className="px-1.5 py-0.2 rounded-full bg-white/[0.05] text-[10px] font-mono text-zinc-400">
-                      2
-                    </span>
-                  </div>
-                </div>
+          {/* Simulated Toast Notification */}
+          {simulatedLiveEvent && (
+            <div className="p-3 bg-graphite-orange text-graphite-fieldInk rounded text-xs font-bold flex items-center justify-between animate-in fade-in duration-200">
+              <span>{simulatedLiveEvent}</span>
+              <span className="text-[10px] bg-graphite-fieldInk text-graphite-field px-1.5 py-0.5 rounded">
+                BROADCAST CONFIRMED
+              </span>
+            </div>
+          )}
 
-                <div className="space-y-2">
-                  <div className="p-2.5 bg-surface-850 border border-border-subtle rounded-md hover:border-border-hover transition group">
-                    <div className="flex items-center justify-between text-[10px] text-zinc-500 font-mono mb-1">
-                      <span>#104</span>
-                      <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[9px]">
-                        Low
-                      </span>
-                    </div>
-                    <div className="text-xs text-zinc-200 font-medium leading-snug">
-                      Write OpenAPI / Swagger route specifications
-                    </div>
-                  </div>
-
-                  <div className="p-2.5 bg-surface-850 border border-border-subtle rounded-md hover:border-border-hover transition group">
-                    <div className="flex items-center justify-between text-[10px] text-zinc-500 font-mono mb-1">
-                      <span>#105</span>
-                      <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 text-[9px]">
-                        Medium
-                      </span>
-                    </div>
-                    <div className="text-xs text-zinc-200 font-medium leading-snug">
-                      Configure Redis sliding-window rate limiter
-                    </div>
-                  </div>
+          {/* 3 Full Kanban Columns */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* Column 1: Backlog */}
+            <div className="bg-graphite-bg rounded-lg p-3 space-y-2">
+              <div className="flex items-center justify-between pb-1">
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs font-bold text-graphite-ink">Backlog</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-graphite-surface text-graphite-muted font-bold">
+                    {filteredTasks.filter((t) => t.column === 'backlog').length}
+                  </span>
                 </div>
+                <button className="text-graphite-muted hover:text-graphite-ink p-1">
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
               </div>
 
-              {/* Column 2: In Progress */}
-              <div className="w-64 shrink-0 bg-surface-900 border border-border-subtle rounded-lg p-3">
-                <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-border-subtle">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs font-medium text-zinc-200">In Progress</span>
-                    <span className="px-1.5 py-0.2 rounded-full bg-accent/15 text-[10px] font-mono text-accent">
-                      2
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="p-2.5 bg-surface-850 border border-accent/40 rounded-md ring-1 ring-accent/20 transition">
-                    <div className="flex items-center justify-between text-[10px] font-mono mb-1">
-                      <span className="text-accent">#102</span>
-                      <span className="px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-300 text-[9px]">
-                        Urgent
-                      </span>
-                    </div>
-                    <div className="text-xs text-zinc-100 font-medium leading-snug">
-                      Implement Socket.IO room subscriptions & optimistic reordering
-                    </div>
-                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-border-subtle text-[10px] text-zinc-400">
-                      <span className="flex items-center space-x-1 text-emerald-400">
-                        <Radio className="w-3 h-3 animate-pulse" />
-                        <span>Syncing</span>
-                      </span>
-                      <div className="w-4 h-4 rounded-full bg-indigo-600 text-[8px] font-bold flex items-center justify-center text-white">
-                        AC
+              <div className="space-y-2">
+                {filteredTasks
+                  .filter((t) => t.column === 'backlog')
+                  .map((task) => (
+                    <div
+                      key={task.id}
+                      onClick={() => setSelectedTask(task)}
+                      className={`p-3 rounded-lg bg-graphite-surface hover:bg-graphite-elevated cursor-pointer transition ${selectedTask?.id === task.id ? 'ring-2 ring-graphite-orange' : ''}`}
+                    >
+                      <div className="flex items-center justify-between text-[11px] mb-1">
+                        <span className="font-bold text-graphite-muted">{task.number}</span>
+                        <span className="px-1.5 py-0.5 rounded bg-graphite-elevated text-graphite-muted font-bold text-[10px]">
+                          {task.priority}
+                        </span>
+                      </div>
+                      <div className="text-xs font-medium text-graphite-ink leading-snug">
+                        {task.title}
+                      </div>
+                      <div className="flex items-center justify-between mt-3 text-[10px] text-graphite-muted">
+                        <span>{task.time}</span>
+                        <span className="w-5 h-5 rounded bg-graphite-elevated text-graphite-ink flex items-center justify-center font-bold text-[9px]">
+                          {task.assigneeInitials}
+                        </span>
                       </div>
                     </div>
-                  </div>
+                  ))}
+              </div>
+            </div>
 
-                  <div className="p-2.5 bg-surface-850 border border-border-subtle rounded-md hover:border-border-hover transition">
-                    <div className="flex items-center justify-between text-[10px] text-zinc-500 font-mono mb-1">
-                      <span>#103</span>
-                      <span className="px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-300 text-[9px]">
-                        High
-                      </span>
+            {/* Column 2: In Progress */}
+            <div className="bg-graphite-bg rounded-lg p-3 space-y-2">
+              <div className="flex items-center justify-between pb-1">
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs font-bold text-graphite-orange">In Progress</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-graphite-orange text-graphite-fieldInk font-bold">
+                    {filteredTasks.filter((t) => t.column === 'in_progress').length}
+                  </span>
+                </div>
+                <button className="text-graphite-muted hover:text-graphite-ink p-1">
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {filteredTasks
+                  .filter((t) => t.column === 'in_progress')
+                  .map((task) => (
+                    <div
+                      key={task.id}
+                      onClick={() => setSelectedTask(task)}
+                      className={`p-3 rounded-lg bg-graphite-elevated cursor-pointer transition ${selectedTask?.id === task.id ? 'ring-2 ring-graphite-orange' : ''}`}
+                    >
+                      <div className="flex items-center justify-between text-[11px] mb-1">
+                        <span className="font-bold text-graphite-orange">{task.number}</span>
+                        <span className="px-1.5 py-0.5 rounded bg-graphite-surface text-graphite-orange font-bold text-[10px]">
+                          {task.priority}
+                        </span>
+                      </div>
+                      <div className="text-xs font-bold text-graphite-ink leading-snug">
+                        {task.title}
+                      </div>
+                      <div className="flex items-center justify-between mt-3 text-[10px] text-graphite-muted">
+                        <span className="text-graphite-orange font-bold">Active socket stream</span>
+                        <span className="w-5 h-5 rounded bg-graphite-orange text-graphite-fieldInk flex items-center justify-center font-bold text-[9px]">
+                          {task.assigneeInitials}
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-xs text-zinc-200 font-medium leading-snug">
-                      Redis key expiry for single-use workspace invite tokens
-                    </div>
-                  </div>
+                  ))}
+              </div>
+            </div>
+
+            {/* Column 3: Shipped / Done */}
+            <div className="bg-graphite-bg rounded-lg p-3 space-y-2">
+              <div className="flex items-center justify-between pb-1">
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs font-bold text-graphite-muted">Shipped</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-graphite-surface text-graphite-muted font-bold">
+                    {filteredTasks.filter((t) => t.column === 'done').length}
+                  </span>
                 </div>
               </div>
 
-              {/* Column 3: Completed */}
-              <div className="w-64 shrink-0 bg-surface-900 border border-border-subtle rounded-lg p-3">
-                <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-border-subtle">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs font-medium text-zinc-200">Done</span>
-                    <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-[10px] font-mono text-emerald-400">
-                      3
-                    </span>
-                  </div>
+              <div className="space-y-2">
+                {filteredTasks
+                  .filter((t) => t.column === 'done')
+                  .map((task) => (
+                    <div
+                      key={task.id}
+                      onClick={() => setSelectedTask(task)}
+                      className={`p-3 rounded-lg bg-graphite-surface cursor-pointer opacity-80 hover:opacity-100 transition ${selectedTask?.id === task.id ? 'ring-2 ring-graphite-orange' : ''}`}
+                    >
+                      <div className="flex items-center justify-between text-[11px] mb-1">
+                        <span className="font-bold text-graphite-muted">{task.number}</span>
+                        <span className="text-[10px] text-graphite-muted">Completed</span>
+                      </div>
+                      <div className="text-xs text-graphite-muted line-through leading-snug">
+                        {task.title}
+                      </div>
+                      <div className="flex items-center justify-between mt-3 text-[10px] text-graphite-muted">
+                        <span>{task.time}</span>
+                        <span className="w-5 h-5 rounded bg-graphite-elevated text-graphite-muted flex items-center justify-center font-bold text-[9px]">
+                          {task.assigneeInitials}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Selected Task Inspection Drawer (Shows when clicked) */}
+          {selectedTask && (
+            <div className="p-4 rounded-lg bg-graphite-bg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-in fade-in duration-150">
+              <div className="space-y-0.5">
+                <div className="font-bold text-graphite-ink flex items-center space-x-2">
+                  <span className="text-graphite-orange">{selectedTask.number}</span>
+                  <span>{selectedTask.title}</span>
                 </div>
-
-                <div className="space-y-2">
-                  <div className="p-2.5 bg-surface-850 border border-border-subtle rounded-md opacity-75">
-                    <div className="flex items-center justify-between text-[10px] text-zinc-500 font-mono mb-1">
-                      <span>#100</span>
-                      <Check className="w-3 h-3 text-emerald-400" />
-                    </div>
-                    <div className="text-xs text-zinc-400 line-through">
-                      Prisma schema migration & PostgreSQL indexing
-                    </div>
-                  </div>
-
-                  <div className="p-2.5 bg-surface-850 border border-border-subtle rounded-md opacity-75">
-                    <div className="flex items-center justify-between text-[10px] text-zinc-500 font-mono mb-1">
-                      <span>#101</span>
-                      <Check className="w-3 h-3 text-emerald-400" />
-                    </div>
-                    <div className="text-xs text-zinc-400 line-through">
-                      JWT authentication flow with bcrypt password hashing
-                    </div>
-                  </div>
+                <div className="text-graphite-muted text-[11px]">
+                  Assigned to {selectedTask.assignee} · Priority: {selectedTask.priority} · State: {selectedTask.column}
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Live Event Dispatch Ticker Bar */}
-          <div className="h-8 px-4 bg-surface-900 border-t border-border-subtle flex items-center justify-between text-[11px] font-mono text-zinc-400">
-            <div className="flex items-center space-x-2 truncate">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-zinc-500">[19:28:40]</span>
-              <span className="text-indigo-400">redis_pubsub</span>
-              <span className="text-zinc-600">→</span>
-              <span className="text-zinc-300 truncate">event: 'task:moved' broadcasted to 3 clients in 11ms</span>
-            </div>
-            <span className="text-[10px] text-zinc-500 hidden sm:inline">P99 Latency: 14ms</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Metrics Strip */}
-      <section className="border-y border-border-subtle bg-surface-900/40 py-10">
-        <div className="max-w-5xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div>
-            <div className="text-2xl sm:text-3xl font-semibold text-white tracking-tight font-mono">
-              &lt; 15ms
-            </div>
-            <div className="text-xs text-zinc-400 mt-1">Socket.IO Event Broadcast</div>
-          </div>
-          <div>
-            <div className="text-2xl sm:text-3xl font-semibold text-white tracking-tight font-mono">
-              48 Hours
-            </div>
-            <div className="text-xs text-zinc-400 mt-1">Redis Ephemeral Token TTL</div>
-          </div>
-          <div>
-            <div className="text-2xl sm:text-3xl font-semibold text-white tracking-tight font-mono">
-              100%
-            </div>
-            <div className="text-xs text-zinc-400 mt-1">TypeScript Strict Coverage</div>
-          </div>
-          <div>
-            <div className="text-2xl sm:text-3xl font-semibold text-white tracking-tight font-mono">
-              Zero
-            </div>
-            <div className="text-xs text-zinc-400 mt-1">Layout Shifts on Drag</div>
-          </div>
-        </div>
-      </section>
-
-      {/* Core Features Bento Grid */}
-      <section id="features" className="max-w-5xl mx-auto px-4 py-20">
-        <div className="text-center mb-14">
-          <span className="text-xs font-medium text-accent uppercase tracking-wider">
-            Architecture Highlights
-          </span>
-          <h2 className="text-2xl sm:text-4xl font-semibold text-white mt-2 tracking-tight">
-            Built for production. Not just a prototype.
-          </h2>
-          <p className="text-sm text-zinc-400 mt-2 max-w-xl mx-auto">
-            Engineered with the reliability and scalability patterns expected in modern distributed systems.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Bento Card 1: Real-time Engine */}
-          <div className="md:col-span-2 rounded-xl border border-border-subtle bg-surface-900 p-6 flex flex-col justify-between hover:border-border-hover transition">
-            <div>
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-accent flex items-center justify-center mb-4">
-                <Zap className="w-4 h-4" />
+              <div className="flex items-center space-x-2 shrink-0">
+                <button
+                  onClick={() => setSelectedTask(null)}
+                  className="px-3 py-1.5 rounded bg-graphite-surface text-graphite-muted hover:text-graphite-ink"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={handleDemoClick}
+                  className="px-3 py-1.5 rounded bg-graphite-orange text-graphite-fieldInk font-bold flex items-center space-x-1"
+                >
+                  <span>Edit in Demo</span>
+                  <MoveRight className="w-3.5 h-3.5" />
+                </button>
               </div>
-              <h3 className="text-base font-semibold text-white tracking-tight">
-                Sub-15ms WebSocket Event Engine
-              </h3>
-              <p className="text-xs text-zinc-400 mt-2 leading-relaxed max-w-md">
-                Every card mutation, column reorganization, and board status update broadcasts via Socket.IO
-                rooms backed by Redis Pub/Sub. When a teammate drops a task, your screen reflects it instantly
-                without polling.
-              </p>
-            </div>
-
-            <div className="mt-6 p-3 rounded-lg bg-surface-850 border border-border-subtle font-mono text-[11px] text-zinc-300">
-              <span className="text-zinc-500">// Client-side event subscription</span>
-              <div className="text-indigo-300 mt-1">
-                socket.on('task:moved', (payload) =&gt; queryClient.setQueryData(...))
-              </div>
-            </div>
-          </div>
-
-          {/* Bento Card 2: RBAC & Workspaces */}
-          <div className="rounded-xl border border-border-subtle bg-surface-900 p-6 flex flex-col justify-between hover:border-border-hover transition">
-            <div>
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-4">
-                <Users className="w-4 h-4" />
-              </div>
-              <h3 className="text-base font-semibold text-white tracking-tight">
-                Workspace Multi-Tenancy & RBAC
-              </h3>
-              <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-                Clean organization isolation with Owner, Admin, and Member permissions enforced across REST
-                middleware and database relations.
-              </p>
-            </div>
-
-            <div className="mt-6 flex items-center space-x-2 text-[10px] font-mono text-zinc-400">
-              <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300">OWNER</span>
-              <span className="px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-300">ADMIN</span>
-              <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">MEMBER</span>
-            </div>
-          </div>
-
-          {/* Bento Card 3: Optimistic DND */}
-          <div className="rounded-xl border border-border-subtle bg-surface-900 p-6 flex flex-col justify-between hover:border-border-hover transition">
-            <div>
-              <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center mb-4">
-                <Kanban className="w-4 h-4" />
-              </div>
-              <h3 className="text-base font-semibold text-white tracking-tight">
-                Optimistic UI with Rollback
-              </h3>
-              <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-                Zero network lag during card drags. TanStack Query snapshots prior cache state and rolls back
-                gracefully if server verification fails.
-              </p>
-            </div>
-
-            <div className="mt-6 flex items-center space-x-2 text-xs text-zinc-400">
-              <div className="w-2 h-2 rounded-full bg-amber-400" />
-              <span className="text-[11px] font-mono">Rollback safe on network drop</span>
-            </div>
-          </div>
-
-          {/* Bento Card 4: Redis Security */}
-          <div className="md:col-span-2 rounded-xl border border-border-subtle bg-surface-900 p-6 flex flex-col justify-between hover:border-border-hover transition">
-            <div>
-              <div className="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center mb-4">
-                <Clock className="w-4 h-4" />
-              </div>
-              <h3 className="text-base font-semibold text-white tracking-tight">
-                Redis-Backed Ephemeral Invitations
-              </h3>
-              <p className="text-xs text-zinc-400 mt-2 leading-relaxed max-w-lg">
-                Instead of leaking indefinite invite links, TeamSync generates cryptographic, single-use
-                tokens stored in Redis with an exact 48-hour TTL. Tokens self-destruct upon redemption.
-              </p>
-            </div>
-
-            <div className="mt-6 p-3 rounded-lg bg-surface-850 border border-border-subtle font-mono text-[11px] text-zinc-300 flex items-center justify-between">
-              <span className="text-zinc-400">SET invite:8f7e2a 1 EX 172800</span>
-              <span className="text-emerald-400 text-[10px]">TTL 48:00:00</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Interactive Architecture Section */}
-      <section id="architecture" className="max-w-5xl mx-auto px-4 py-16 border-t border-border-subtle">
-        <div className="text-center mb-10">
-          <span className="text-xs font-medium text-accent uppercase tracking-wider">
-            Deep Dive
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-semibold text-white mt-1 tracking-tight">
-            Full-Stack System Architecture
-          </h2>
-          <p className="text-xs text-zinc-400 mt-1">
-            Inspect the underlying mechanisms powering real-time synchronization.
-          </p>
-        </div>
-
-        {/* Tab Selector */}
-        <div className="flex justify-center mb-6">
-          <div className="p-1 bg-surface-900 border border-border-subtle rounded-lg flex space-x-1">
-            <button
-              onClick={() => setActiveArchTab('socket')}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
-                activeArchTab === 'socket'
-                  ? 'bg-surface-850 text-white shadow-sm border border-border-subtle'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              1. Socket.IO Room Mesh
-            </button>
-            <button
-              onClick={() => setActiveArchTab('redis')}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
-                activeArchTab === 'redis'
-                  ? 'bg-surface-850 text-white shadow-sm border border-border-subtle'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              2. Redis TTL & Caching
-            </button>
-            <button
-              onClick={() => setActiveArchTab('prisma')}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
-                activeArchTab === 'prisma'
-                  ? 'bg-surface-850 text-white shadow-sm border border-border-subtle'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              3. PostgreSQL Schema & Prisma
-            </button>
-          </div>
-        </div>
-
-        {/* Code / Visual Box */}
-        <div className="rounded-xl border border-border-subtle bg-surface-900 p-5 font-mono text-xs overflow-x-auto shadow-xl">
-          {activeArchTab === 'socket' && (
-            <div className="space-y-2 text-zinc-300">
-              <div className="text-zinc-500">// ts-backend/src/socket.ts - Room event routing</div>
-              <div><span className="text-indigo-400">io.on</span>('connection', (socket) =&gt; &#123;</div>
-              <div className="pl-4">socket.on('join_board', (boardId) =&gt; &#123;</div>
-              <div className="pl-8">socket.join(`board:$&#123;boardId&#125;`);</div>
-              <div className="pl-8 text-zinc-500">// Broadcast presence to other board peers</div>
-              <div className="pl-8">socket.to(`board:$&#123;boardId&#125;`).emit('user_joined', socket.user);</div>
-              <div className="pl-4">&#125;);</div>
-              <div className="pl-4">socket.on('task_move', async (data) =&gt; &#123;</div>
-              <div className="pl-8 text-emerald-400">socket.to(`board:$&#123;data.boardId&#125;`).emit('task_moved', data);</div>
-              <div className="pl-4">&#125;);</div>
-              <div>&#125;);</div>
-            </div>
-          )}
-
-          {activeArchTab === 'redis' && (
-            <div className="space-y-2 text-zinc-300">
-              <div className="text-zinc-500">// ts-backend/src/services/workspace.service.ts - Ephemeral token creation</div>
-              <div><span className="text-indigo-400">const</span> token = crypto.randomBytes(32).toString('hex');</div>
-              <div><span className="text-indigo-400">const</span> payload = JSON.stringify(&#123; workspaceId, role &#125;);</div>
-              <div className="text-zinc-500">// Set in Redis with 48-hour expiration (172800 seconds)</div>
-              <div><span className="text-emerald-400">await</span> redis.set(`invite:$&#123;token&#125;`, payload, 'EX', 172800);</div>
-              <div className="mt-3 text-zinc-500">// Atomic token verification & single-use consumption</div>
-              <div><span className="text-indigo-400">const</span> data = <span className="text-emerald-400">await</span> redis.getdel(`invite:$&#123;token&#125;`);</div>
-            </div>
-          )}
-
-          {activeArchTab === 'prisma' && (
-            <div className="space-y-2 text-zinc-300">
-              <div className="text-zinc-500">// prisma/schema.prisma - Multi-tenant relational model</div>
-              <div><span className="text-indigo-400">model</span> Workspace &#123;</div>
-              <div className="pl-4">id          String            @id @default(uuid())</div>
-              <div className="pl-4">name        String</div>
-              <div className="pl-4">members     WorkspaceMember[]</div>
-              <div className="pl-4">boards      Board[]</div>
-              <div>&#125;</div>
-              <div className="mt-2"><span className="text-indigo-400">model</span> Task &#123;</div>
-              <div className="pl-4">id          String            @id @default(uuid())</div>
-              <div className="pl-4">title       String</div>
-              <div className="pl-4">order       Int</div>
-              <div className="pl-4">listId      String</div>
-              <div className="pl-4">list        List              @relation(fields: [listId], references: [id])</div>
-              <div>&#125;</div>
             </div>
           )}
         </div>
       </section>
 
-      {/* Tech Stack Grid */}
-      <section id="stack" className="max-w-5xl mx-auto px-4 py-16 border-t border-border-subtle">
-        <div className="text-center mb-12">
-          <span className="text-xs font-medium text-accent uppercase tracking-wider">
-            Technologies
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-semibold text-white mt-1 tracking-tight">
-            The Production Tech Stack
-          </h2>
-          <p className="text-xs text-zinc-400 mt-1">
-            Engineered with modern, battle-tested tools across the entire stack.
-          </p>
-        </div>
+      {/* 4. SHOWCASE: ROWS AS A DEPARTURE BOARD BLUEPRINT */}
+      <section id="showcase" className="pt-8 pb-4 scroll-reveal">
+        <h2 className="font-jost text-2xl sm:text-4xl font-bold text-graphite-ink mb-3 px-2">
+          Live socket dispatch board
+        </h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { name: 'TypeScript', desc: 'End-to-end type safety', tag: 'Client & Server', icon: Code2 },
-            { name: 'React 19', desc: 'Concurrent UI & hooks', tag: 'Frontend', icon: Cpu },
-            { name: 'Node.js & Express', desc: 'REST API & middleware', tag: 'Backend', icon: Server },
-            { name: 'Socket.IO', desc: 'Real-time WebSocket sync', tag: 'Networking', icon: Activity },
-            { name: 'PostgreSQL 16', desc: 'ACID relational database', tag: 'Database', icon: Database },
-            { name: 'Redis 7', desc: 'Pub/Sub & token caching', tag: 'In-Memory', icon: Zap },
-            { name: 'Prisma ORM', desc: 'Declarative type-safe ORM', tag: 'Data Access', icon: GitBranch },
-            { name: 'Tailwind CSS', desc: 'Tokenized minimal design', tag: 'Styling', icon: Layers },
-          ].map((item, idx) => {
-            const Icon = item.icon;
+        <div data-ui="dispatch-board" className="space-y-1.5">
+          {dispatchRows.map((row) => {
+            const isOpen = activeDispatchRow === row.id;
             return (
               <div
-                key={idx}
-                className="p-4 rounded-lg bg-surface-900 border border-border-subtle hover:border-border-hover transition group"
+                key={row.id}
+                onClick={() => setActiveDispatchRow(row.id)}
+                className={`rounded-lg p-4 sm:p-5 transition cursor-pointer ${
+                  isOpen
+                    ? 'bg-graphite-orange text-graphite-fieldInk min-h-[160px] flex flex-col justify-between'
+                    : 'bg-graphite-surface text-graphite-ink hover:bg-graphite-elevated h-16 sm:h-18 flex items-center justify-between'
+                }`}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-[10px] font-mono text-accent">{item.tag}</div>
-                  <div className="w-5 h-5 rounded bg-white/[0.04] flex items-center justify-center text-zinc-400 group-hover:text-accent transition">
-                    <Icon className="w-3 h-3" />
-                  </div>
-                </div>
-                <div className="text-sm font-semibold text-white">{item.name}</div>
-                <div className="text-[11px] text-zinc-400 mt-0.5">{item.desc}</div>
+                {isOpen ? (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="font-jost font-bold text-sm tracking-normal">
+                        EVENT: {row.event}
+                      </span>
+                      <span className="text-xs font-bold bg-graphite-fieldInk text-graphite-field px-2 py-1 rounded">
+                        LATENCY: {row.time}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="font-jost text-xl sm:text-2xl font-bold leading-snug">
+                        {row.target}
+                      </div>
+                      <div className="text-xs mt-1 opacity-90">{row.detail}</div>
+                    </div>
+                    <div className="flex items-center justify-between text-xs font-bold pt-2">
+                      <span>DISPATCHED BY: {row.author}</span>
+                      <span>STATUS: {row.status}</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center space-x-4 sm:space-x-8 truncate">
+                      <span className="font-jost text-xs sm:text-sm font-bold text-graphite-orange shrink-0">
+                        {row.event}
+                      </span>
+                      <span className="text-xs sm:text-sm font-medium text-graphite-ink truncate">
+                        {row.target}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-4 shrink-0 text-xs">
+                      <span className="text-graphite-muted hidden sm:inline">{row.author}</span>
+                      <span className="text-graphite-muted">{row.time}</span>
+                      <span className="px-2 py-0.5 rounded bg-graphite-bg text-graphite-muted font-bold text-[11px]">
+                        {row.status}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             );
           })}
         </div>
       </section>
 
-      {/* Bottom CTA Banner */}
-      <section className="max-w-5xl mx-auto px-4 py-20">
-        <div className="relative rounded-2xl border border-border-subtle bg-gradient-to-b from-surface-900 to-surface-950 p-8 sm:p-12 text-center overflow-hidden shadow-2xl">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-48 bg-accent/15 rounded-full blur-3xl pointer-events-none" />
+      {/* 5. HOW IT WORKS: TILES THAT GROW BLUEPRINT */}
+      <section id="engine" className="pt-8 pb-4 scroll-reveal">
+        <h2 className="font-jost text-2xl sm:text-4xl font-bold text-graphite-ink mb-4 px-2">
+          How the engine syncs.
+        </h2>
 
-          <h2 className="text-2xl sm:text-4xl font-semibold text-white tracking-tight relative z-10">
-            Ready to experience TeamSync?
-          </h2>
-          <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto mt-3 relative z-10">
-            Jump directly into a pre-configured team workspace with sample boards, tasks, and live collaboration.
-          </p>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
+          {/* Tile 1: Connect */}
+          <div className="md:col-span-3 bg-graphite-surface rounded-lg p-6 flex flex-col justify-between h-[200px] scroll-scale">
+            <div className="font-jost text-xl font-bold text-graphite-ink">
+              Connect
+            </div>
+            <div className="text-xs text-graphite-muted leading-relaxed">
+              Client establishes bidirectional WebSocket handshake. JWT verified and connection pinned to workspace room.
+            </div>
+          </div>
 
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 relative z-10">
-            <button
-              onClick={handleDemoClick}
-              disabled={isDemoLoading}
-              className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 py-3 rounded-lg text-xs sm:text-sm font-medium bg-accent hover:bg-accent-hover text-white transition shadow-lg shadow-accent/25 hover:shadow-accent/40"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>{isDemoLoading ? 'Launching demo...' : 'Try Demo Workspace (1-Click)'}</span>
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </button>
+          {/* Tile 2: Mutate */}
+          <div className="md:col-span-4 bg-graphite-elevated rounded-lg p-6 flex flex-col justify-between h-[280px] scroll-scale">
+            <div className="font-jost text-2xl font-bold text-graphite-ink">
+              Mutate
+            </div>
+            <div className="text-xs text-graphite-muted leading-relaxed">
+              Teammate drags a card. TanStack Query applies an optimistic state transition instantly in the DOM with automated rollback protection.
+            </div>
+          </div>
 
-            <Link
-              to="/register"
-              className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 py-3 rounded-lg text-xs sm:text-sm font-medium bg-surface-850 hover:bg-surface-800 border border-border-subtle text-zinc-200 transition"
-            >
-              <span>Create Account</span>
-            </Link>
+          {/* Tile 3: Broadcast */}
+          <div className="md:col-span-5 bg-graphite-orange text-graphite-fieldInk rounded-lg p-8 flex flex-col justify-between h-[360px] scroll-scale">
+            <div className="font-jost text-4xl font-bold leading-tight">
+              Broadcast
+            </div>
+            <div className="text-sm font-medium leading-relaxed">
+              Express commits mutation to PostgreSQL via Prisma ORM and sends the event payload to Redis. Redis Pub/Sub fans out the update to all active workspace peers in under 15 milliseconds.
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border-subtle bg-canvas py-8 text-xs text-zinc-500 font-sans">
-        <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center space-x-2">
-            <div className="w-5 h-5 rounded bg-accent flex items-center justify-center text-white">
-              <Layers className="w-3 h-3" />
+      {/* 6. PRACTICAL DEEP-DIVE: INTERACTIVE ARCHITECTURE INSPECTOR */}
+      <section className="pt-8 pb-4 scroll-reveal">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-2 mb-3 gap-2">
+          <div>
+            <h2 className="font-jost text-2xl sm:text-3xl font-bold text-graphite-ink">
+              System Architecture Inspector
+            </h2>
+            <p className="text-xs text-graphite-muted">
+              Inspect the real backend implementation wiring client, socket mesh, and database.
+            </p>
+          </div>
+          <div className="flex space-x-1 bg-graphite-surface rounded p-1">
+            <button
+              onClick={() => setActiveArchTab('socket')}
+              className={`px-3 py-1.5 rounded text-xs font-bold transition ${activeArchTab === 'socket' ? 'bg-graphite-orange text-graphite-fieldInk' : 'text-graphite-muted hover:text-graphite-ink'}`}
+            >
+              Socket Mesh
+            </button>
+            <button
+              onClick={() => setActiveArchTab('redis')}
+              className={`px-3 py-1.5 rounded text-xs font-bold transition ${activeArchTab === 'redis' ? 'bg-graphite-orange text-graphite-fieldInk' : 'text-graphite-muted hover:text-graphite-ink'}`}
+            >
+              Redis TTL
+            </button>
+            <button
+              onClick={() => setActiveArchTab('prisma')}
+              className={`px-3 py-1.5 rounded text-xs font-bold transition ${activeArchTab === 'prisma' ? 'bg-graphite-orange text-graphite-fieldInk' : 'text-graphite-muted hover:text-graphite-ink'}`}
+            >
+              PostgreSQL Prisma
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-graphite-surface rounded-lg p-6 overflow-x-auto text-xs">
+          {activeArchTab === 'socket' && (
+            <pre className="font-mono text-graphite-ink leading-relaxed">
+              <code>
+                {`// ts-backend/src/socket.ts - Low-latency broadcast mesh
+io.on('connection', (socket) => {
+  socket.on('join_board', (boardId) => {
+    socket.join(\`board:\${boardId}\`);
+    // Broadcast peer presence to all connected sockets in room
+    socket.to(\`board:\${boardId}\`).emit('user_joined', socket.user);
+  });
+
+  socket.on('task_move', async (data) => {
+    // Zero-polling event dispatch via Redis Pub/Sub
+    socket.to(\`board:\${data.boardId}\`).emit('task_moved', data);
+  });
+});`}
+              </code>
+            </pre>
+          )}
+
+          {activeArchTab === 'redis' && (
+            <pre className="font-mono text-graphite-ink leading-relaxed">
+              <code>
+                {`// ts-backend/src/services/workspace.service.ts - Ephemeral tokens
+const token = crypto.randomBytes(32).toString('hex');
+const payload = JSON.stringify({ workspaceId, role });
+
+// Atomic Redis set with strict 48-hour expiration (172,800 seconds)
+await redis.set(\`invite:\${token}\`, payload, 'EX', 172800);
+
+// Atomic verification & single-use consumption
+const data = await redis.getdel(\`invite:\${token}\`);`}
+              </code>
+            </pre>
+          )}
+
+          {activeArchTab === 'prisma' && (
+            <pre className="font-mono text-graphite-ink leading-relaxed">
+              <code>
+                {`// prisma/schema.prisma - Multi-tenant relational model
+model Workspace {
+  id          String            @id @default(uuid())
+  name        String
+  members     WorkspaceMember[]
+  boards      Board[]
+}
+
+model Task {
+  id          String            @id @default(uuid())
+  title       String
+  order       Int
+  listId      String
+  list        List              @relation(fields: [listId], references: [id])
+}`}
+              </code>
+            </pre>
+          )}
+        </div>
+      </section>
+
+      {/* 7. FEATURES: STATEMENT CELL, DARK ROWS BLUEPRINT */}
+      <section className="pt-8 pb-4 scroll-reveal">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
+          {/* Left: Statement Cell in Light Ground */}
+          <div className="lg:col-span-6 bg-graphite-field text-graphite-fieldInk rounded-lg p-8 sm:p-12 flex flex-col justify-between min-h-[460px]">
+            <div>
+              <h2 className="font-jost text-5xl sm:text-7xl font-bold tracking-tight leading-none">
+                BUILT FOR SPEED
+              </h2>
             </div>
-            <span className="font-semibold text-zinc-300">TeamSync</span>
-            <span className="text-zinc-600">·</span>
-            <span>Production-Ready Collaboration Platform</span>
+            <div>
+              <p className="font-jost text-base sm:text-lg leading-relaxed text-graphite-fieldInk font-medium max-w-md">
+                TeamSync eliminates coordination lag. No stale browser tabs, no missing context, and no synchronization collisions.
+              </p>
+              <button
+                onClick={handleDemoClick}
+                disabled={isDemoLoading}
+                className="mt-6 px-6 py-3 bg-graphite-fieldInk text-graphite-field font-jost font-bold text-sm rounded-lg hover:opacity-90 active:scale-[0.98] transition"
+              >
+                Launch Demo Workspace
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center space-x-2 font-mono text-[11px] text-zinc-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span>All systems operational</span>
+          {/* Right: Dark Stacked Rows */}
+          <div className="lg:col-span-6 flex flex-col space-y-2">
+            {[
+              {
+                title: 'Multi-Tenant Workspaces',
+                desc: 'Clean organization-level tenant isolation with Owner, Admin, and Member permission tiers.',
+              },
+              {
+                title: 'Redis Ephemeral Invitations',
+                desc: 'Single-use cryptographic invite links with exact 48-hour TTL that self-destruct upon redemption.',
+              },
+              {
+                title: 'Optimistic UI with Rollback',
+                desc: 'Sub-second UI responsiveness during drag and drop with automatic cache rollback on network drops.',
+              },
+              {
+                title: 'PostgreSQL & Prisma ORM',
+                desc: 'ACID transactional data integrity, schema foreign keys, and database connection pooling.',
+              },
+            ].map((feature, idx) => (
+              <div
+                key={idx}
+                className={`p-6 rounded-lg flex flex-col justify-between flex-1 ${
+                  idx % 2 === 0 ? 'bg-graphite-surface' : 'bg-graphite-elevated'
+                }`}
+              >
+                <div className="font-jost text-lg font-bold text-graphite-ink">{feature.title}</div>
+                <div className="text-xs text-graphite-muted leading-relaxed mt-1">{feature.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 8. STATS: STEPPED FIGURE TILES BLUEPRINT */}
+      <section id="stats" className="pt-8 pb-4 scroll-reveal">
+        <h2 className="font-jost text-2xl sm:text-4xl font-bold text-graphite-ink mb-4 px-2">
+          Measured performance.
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
+          {/* Tile 1: Tall Orange Tile */}
+          <div className="md:col-span-4 bg-graphite-orange text-graphite-fieldInk rounded-lg p-8 flex flex-col justify-between h-[340px] scroll-scale">
+            <div className="font-jost text-6xl sm:text-7xl font-bold leading-none">&lt;15ms</div>
+            <div className="font-jost text-sm font-bold">
+              Socket.IO WebSocket broadcast latency
+            </div>
+          </div>
+
+          {/* Tile 2: Lower Surface Tile */}
+          <div className="md:col-span-4 bg-graphite-surface rounded-lg p-8 flex flex-col justify-between h-[280px] md:mt-12 scroll-scale">
+            <div className="font-jost text-5xl sm:text-6xl font-bold text-graphite-ink leading-none">48 hrs</div>
+            <div className="font-jost text-sm text-graphite-muted">
+              Redis invite token automatic expiration
+            </div>
+          </div>
+
+          {/* Tile 3: Lowest Elevated Tile */}
+          <div className="md:col-span-4 bg-graphite-elevated rounded-lg p-8 flex flex-col justify-between h-[220px] md:mt-24 scroll-scale">
+            <div className="font-jost text-4xl sm:text-5xl font-bold text-graphite-ink leading-none">100%</div>
+            <div className="font-jost text-sm text-graphite-muted">
+              TypeScript strict type coverage
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 9. ACTION TILE CLOSE (CTA) BLUEPRINT */}
+      <section className="pt-8 pb-4 scroll-reveal">
+        <div className="grid grid-cols-12 gap-2">
+          <div className="hidden lg:block lg:col-span-2 bg-graphite-elevated rounded-lg min-h-[240px]" />
+
+          <div className="col-span-12 lg:col-span-8 bg-graphite-orange text-graphite-fieldInk rounded-lg p-8 sm:p-12 flex flex-col justify-between min-h-[240px]">
+            <div>
+              <h2 className="font-jost text-3xl sm:text-5xl font-bold tracking-tight">
+                Ready to collaborate?
+              </h2>
+              <p className="font-jost text-sm sm:text-base font-medium max-w-lg mt-2 opacity-95">
+                Launch a live demo workspace in one click. Pre-seeded with sprint tasks and simulated peers.
+              </p>
+            </div>
+
+            <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+              <button
+                onClick={handleDemoClick}
+                disabled={isDemoLoading}
+                className="px-6 py-3 bg-graphite-fieldInk text-graphite-field font-jost font-bold text-sm rounded-lg hover:opacity-90 active:scale-[0.98] transition flex items-center space-x-2"
+              >
+                <span>{isDemoLoading ? 'Launching demo...' : 'Try Demo Workspace'}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <Link
+                to="/register"
+                className="px-5 py-3 font-jost font-bold text-xs sm:text-sm text-graphite-fieldInk hover:underline"
+              >
+                Create Account
+              </Link>
+            </div>
+          </div>
+
+          <div className="hidden lg:block lg:col-span-2 bg-graphite-surface rounded-lg min-h-[240px]" />
+        </div>
+      </section>
+
+      {/* 10. FOOTER: DESIGNED CLOSE */}
+      <footer className="pt-6 pb-4">
+        <div className="bg-graphite-surface rounded-lg p-8 sm:p-12 flex flex-col justify-between min-h-[200px]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <span className="font-jost text-4xl sm:text-6xl font-bold tracking-tighter text-graphite-ink">
+              TEAMSYNC
+            </span>
+            <div className="flex items-center space-x-2 text-xs font-bold text-graphite-muted">
+              <span className="w-2 h-2 rounded-full bg-graphite-orange" />
+              <span>All systems operational · PostgreSQL, Redis, Socket.IO, Node.js</span>
+            </div>
+          </div>
+
+          <div className="pt-8 text-xs text-graphite-muted flex flex-col sm:flex-row justify-between gap-2">
+            <span>Production collaboration architecture for engineering teams.</span>
+            <span>MIT License · TeamSync Platform</span>
           </div>
         </div>
       </footer>
