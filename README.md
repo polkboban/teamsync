@@ -4,7 +4,7 @@
 
 ---
 
-## ⚡ Highlights & Key Capabilities
+##  Highlights & Key Capabilities
 
 - **Multiplayer Real-Time State**: Distributed drag-and-drop presence with peer ghost badges (`"[User] is moving this..."`), instant socket synchronization, and room partitioning over Redis Pub/Sub.
 - **Universal Command Palette (`Ctrl + K` / `⌘K`)**: Keyboard-driven fuzzy search across workspaces, boards, task actions, and instant task inspector drawers with full arrow-key and ESC navigation.
@@ -14,72 +14,6 @@
 - **Zero-Downtime Docker Orchestration**: Multi-stage Vite/Nginx frontend container and Alpine Node backend container orchestrating PostgreSQL 16 and Redis 7.
 
 ---
-
-## 🏗️ System Architecture
-
-```mermaid
-flowchart TD
-    subgraph Clients["Browser Clients (React 19 + TypeScript)"]
-        ClientA["User A (Alex)\nWindow 1"]
-        ClientB["User B (Steve)\nWindow 2"]
-    end
-
-    subgraph Gateway["Reverse Proxy & Routing"]
-        Nginx["Nginx Alpine Gateway :80"]
-    end
-
-    subgraph Application["Backend Services (Node 20 / Express 5)"]
-        API["Express 5 REST API\nJWT Auth & RBAC"]
-        SocketServer["Socket.IO Cluster\nRoom Broadcast Engine"]
-    end
-
-    subgraph State["Persistence & Messaging"]
-        Postgres[("PostgreSQL 16\nRelational Models")]
-        RedisStore[("Redis 7\nCache & Pub/Sub")]
-    end
-
-    ClientA <-->|"HTTP /api & WSS"| Nginx
-    ClientB <-->|"HTTP /api & WSS"| Nginx
-
-    Nginx -->|"/api/..."| API
-    Nginx -->|"/socket.io/..."| SocketServer
-
-    API -->|"Prisma Client"| Postgres
-    API -->|"Token Invalidation"| RedisStore
-    SocketServer <-->|"Presence & Sync"| RedisStore
-    SocketServer -->|"Activity & Comments"| Postgres
-```
-
----
-
-## 🔄 Real-Time WebSocket Protocol
-
-TeamSync uses scoped WebSocket rooms to partition traffic and prevent cross-board noise.
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Alice as User A (Alex)
-    participant ClientA as Alice's Browser
-    participant Server as Socket.IO Server
-    participant ClientB as Steve's Browser
-    actor Bob as User B (Steve)
-
-    Alice->>ClientA: Drags Task Card #42
-    ClientA->>Server: emit("task:drag-start", { boardId, taskId, user })
-    Server-->>ClientB: broadcast("task:drag-start", { taskId, user })
-    ClientB->>Bob: Shows Safety-Orange Ghost Chip ("Alex is moving this...")
-
-    Alice->>ClientA: Drops card in "Done" column
-    ClientA->>Server: emit("task:drag-end", { boardId, taskId })
-    Server-->>ClientB: broadcast("task:drag-end", { taskId })
-    ClientB->>Bob: Removes Ghost Chip & Animates Card to "Done"
-
-    Bob->>ClientB: Types in comment drawer
-    ClientB->>Server: emit("task:typing", { boardId, taskId, isTyping: true })
-    Server-->>ClientA: broadcast("task:typing", { taskId, isTyping: true })
-    ClientA->>Alice: Displays "Steve Rogers is typing a comment..."
-```
 
 ### Event Specification
 
@@ -99,7 +33,7 @@ sequenceDiagram
 
 ---
 
-## 🎨 Design Philosophy (Anti-Slop)
+##  Design Philosophy (Anti-Slop)
 
 TeamSync was crafted to eliminate the pervasive "AI-generated SaaS slop" pattern in modern web applications. Every component adheres to an engineered set of taste rules:
 
@@ -111,7 +45,7 @@ TeamSync was crafted to eliminate the pervasive "AI-generated SaaS slop" pattern
 
 ---
 
-## 🗄️ Relational Data Model
+##  Relational Data Model
 
 Implemented in PostgreSQL via Prisma ORM:
 
@@ -135,7 +69,7 @@ erDiagram
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - **Node.js**: v20 or newer
@@ -179,7 +113,7 @@ erDiagram
 
 ---
 
-## 🐳 Docker Production Deployment
+##  Docker Production Deployment
 
 Run the complete multi-container production stack (PostgreSQL, Redis, Express Backend, Nginx-proxied Frontend) with one command:
 
@@ -193,7 +127,7 @@ docker compose up --build
 
 ---
 
-## 🧪 Quality & CI/CD Pipeline
+##  Quality & CI/CD Pipeline
 
 The repository includes a strict GitHub Actions workflow (`.github/workflows/ci.yml`) enforcing code health on every commit:
 
@@ -213,16 +147,5 @@ docker compose config --quiet
 
 ---
 
-## 👥 Seed Accounts for Testing
-
-| User | Email | Password | Role |
-| :--- | :--- | :--- | :--- |
-| **Alex Developer** | `alex@teamsync.com` | `password123` | Workspace Owner |
-| **Steve Rogers** | `steve@teamsync.com` | `password123` | Workspace Member |
-
-*Both users have shared access to workspace **"Team AlphaHQ"** and board **"Frontend Development"** for immediate multiplayer testing.*
-
----
-
-## 📄 License
-MIT © TeamSync Contributors
+##  License
+MIT © 
