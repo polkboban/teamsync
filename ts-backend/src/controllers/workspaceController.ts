@@ -21,7 +21,7 @@ export const createWorkspaceInvite = async (req: AuthRequest, res: Response): Pr
       'Available Prisma models:',
       Object.keys(prisma).filter((key) => !key.startsWith('$') && !key.startsWith('_'))
     );
-    const { id: workspaceId } = req.params;
+    const workspaceId = req.params.id as string;
     const userId = req.userId!;
     const { role } = createInviteSchema.parse(req.body || {});
 
@@ -44,7 +44,7 @@ export const createWorkspaceInvite = async (req: AuthRequest, res: Response): Pr
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ errors: (error as any).issues || (error as any).errors });
     } else {
       console.error(error);
       res.status(500).json({ error: 'Internal server error' });
@@ -95,7 +95,7 @@ export const acceptWorkspaceInvite = async (req: AuthRequest, res: Response): Pr
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ errors: (error as any).issues || (error as any).errors });
     } else {
       console.error(error);
       res.status(500).json({ error: 'Internal server error' });
@@ -129,7 +129,7 @@ export const createWorkspace = async (req: AuthRequest, res: Response): Promise<
     res.status(201).json({ message: 'Workspace created successfully', workspace });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ errors: (error as any).issues || (error as any).errors });
     } else {
       console.error(error);
       res.status(500).json({ error: 'Internal server error' });
@@ -169,7 +169,7 @@ export const getUserWorkspaces = async (req: AuthRequest, res: Response): Promis
 // GET /api/workspaces/:id/members
 export const getWorkspaceMembers = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { id: workspaceId } = req.params;
+    const workspaceId = req.params.id as string;
     const userId = req.userId!;
 
     // Ensure requester is a member of the workspace
@@ -194,7 +194,9 @@ export const getWorkspaceMembers = async (req: AuthRequest, res: Response): Prom
           },
         },
       },
-      orderBy: { createdAt: 'asc' },
+      orderBy: {
+        role: 'asc',
+      },
     });
 
     res.status(200).json({ members });

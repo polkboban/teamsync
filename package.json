@@ -6,6 +6,9 @@
   "scripts": {
     "dev:backend": "npm --prefix ts-backend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
-    "build:frontend": "npm --prefix frontend run build"
+    "build:backend": "npm --prefix ts-backend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "typecheck:backend": "npm --prefix ts-backend run typecheck",
+    "lint:design": "node .agents/skills/design-taste-frontend/scripts/lint.mjs frontend/src"
   }
 }

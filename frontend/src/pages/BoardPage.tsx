@@ -11,6 +11,7 @@ import { Navbar } from '../components/Navbar';
 import { Sidebar } from '../components/Sidebar';
 import { ListColumn } from '../components/ListColumn';
 import { TaskDetailsDrawer } from '../components/TaskDetailsDrawer';
+import { CommandPalette } from '../components/CommandPalette';
 import { CreateWorkspaceModal } from '../components/CreateWorkspaceModal';
 import { CreateBoardModal } from '../components/CreateBoardModal';
 import { InviteModal } from '../components/InviteModal';
@@ -40,10 +41,24 @@ export const BoardPage: React.FC = () => {
   const [isCreateWsOpen, setIsCreateWsOpen] = useState(false);
   const [isCreateBoardOpen, setIsCreateBoardOpen] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+
+  // Global Ctrl+K / Cmd+K listener
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   // Active selections
   const [selectedWsId, setSelectedWsId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'kanban' | 'list' | 'activity'>('kanban');
+  const [remoteDraggingTasks, setRemoteDraggingTasks] = useState<Record<string, { userId: string; userName: string }>>({});
 
   // Task Details Drawer state
   const [inspectingTask, setInspectingTask] = useState<Task | null>(null);
@@ -129,16 +144,35 @@ export const BoardPage: React.FC = () => {
       setInspectingTask(null);
     };
 
+    const handleDragStarted = (data: { taskId: string; userId: string; userName: string }) => {
+      setRemoteDraggingTasks((prev) => ({
+        ...prev,
+        [data.taskId]: { userId: data.userId, userName: data.userName }
+      }));
+    };
+
+    const handleDragEnded = (data: { taskId: string }) => {
+      setRemoteDraggingTasks((prev) => {
+        const next = { ...prev };
+        delete next[data.taskId];
+        return next;
+      });
+    };
+
     socket.on('task:reordered', handleTaskReordered);
     socket.on('task:updated', handleTaskUpdated);
     socket.on('task-updated', handleTaskUpdated);
     socket.on('task:deleted', handleTaskDeleted);
+    socket.on('task:drag-started', handleDragStarted);
+    socket.on('task:drag-ended', handleDragEnded);
 
     return () => {
       socket.off('task:reordered', handleTaskReordered);
       socket.off('task:updated', handleTaskUpdated);
       socket.off('task-updated', handleTaskUpdated);
       socket.off('task:deleted', handleTaskDeleted);
+      socket.off('task:drag-started', handleDragStarted);
+      socket.off('task:drag-ended', handleDragEnded);
     };
   }, [socket, selectedBoardId, queryClient, inspectingTask]);
 
@@ -306,6 +340,7 @@ export const BoardPage: React.FC = () => {
         }}
         onOpenCreateWorkspace={() => setIsCreateWsOpen(true)}
         onOpenInvite={() => setIsInviteOpen(true)}
+        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -446,7 +481,7 @@ export const BoardPage: React.FC = () => {
             /* ========================================================================= */
             <>
               {/* Board Header Bar: Breadcrumbs, View Switcher & Live Presence */}
-              <div data-ui="board-header" className="h-14 px-4 sm:px-6 bg-graphite-surface border-b border-graphite-bg flex items-center justify-between shrink-0">
+              <div data-ui="board-header" className="h-14 px-4 sm:px-6 bg-graphite border-b border-graphite-surface flex items-center justify-between shrink-0">
                 {/* Left: Breadcrumbs & Board Title */}
                 <div className="flex items-center space-x-3 truncate">
                   <button
@@ -537,7 +572,26 @@ export const BoardPage: React.FC = () => {
                   </div>
                 ) : viewMode === 'kanban' ? (
                   /* KANBAN VIEW */
-                  <DragDropContext onDragEnd={handleDragEnd}>
+                  <DragDropContext
+                    onDragStart={(start) => {
+                      if (socket && selectedBoardId) {
+                        socket.emit('task:drag-start', {
+                          boardId: selectedBoardId,
+                          taskId: start.draggableId,
+                          userName: user?.name || 'Teammate',
+                        });
+                      }
+                    }}
+                    onDragEnd={(result) => {
+                      if (socket && selectedBoardId) {
+                        socket.emit('task:drag-end', {
+                          boardId: selectedBoardId,
+                          taskId: result.draggableId,
+                        });
+                      }
+                      handleDragEnd(result);
+                    }}
+                  >
                     <div className="flex items-start space-x-3 h-full">
                       {lists.map((list) => (
                         <ListColumn
@@ -551,6 +605,7 @@ export const BoardPage: React.FC = () => {
                             assignTaskMutation.mutate({ taskId, assigneeId });
                           }}
                           onTaskClick={(task) => setInspectingTask(task)}
+                          remoteDraggingTasks={remoteDraggingTasks}
                         />
                       ))}
 
@@ -680,6 +735,7 @@ export const BoardPage: React.FC = () => {
         task={inspectingTask}
         lists={lists}
         members={members}
+        boardId={selectedBoardId}
         onUpdateTask={async (taskId, data) => {
           await updateTaskMutation.mutateAsync({ taskId, data });
         }}
@@ -717,6 +773,30 @@ export const BoardPage: React.FC = () => {
           workspaceName={currentWorkspace.name}
         />
       )}
+
+      {/* Command Palette (Ctrl+K / Cmd+K) */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        boards={boards}
+        onSelectBoard={(bId) => {
+          if (bId) {
+            navigate(`/app/boards/${bId}`);
+          } else {
+            navigate('/app');
+          }
+        }}
+        onOpenCreateBoard={() => setIsCreateBoardOpen(true)}
+        onOpenCreateWorkspace={() => setIsCreateWsOpen(true)}
+        onOpenInvite={() => setIsInviteOpen(true)}
+        tasks={allTasks}
+        onSelectTask={(taskId) => {
+          const t = allTasks.find((task) => task.id === taskId);
+          if (t) setInspectingTask(t);
+        }}
+        currentView={viewMode}
+        onSwitchView={setViewMode}
+      />
     </div>
   );
 };

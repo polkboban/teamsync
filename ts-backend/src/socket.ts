@@ -24,8 +24,8 @@ export function initializeSocket(httpServer: HttpServer): SocketIOServer {
         }
 
         try {
-            const decoded = verifyToken(token);
-            socket.data.userId = decoded.userId;
+            const decoded = verifyToken(token) as any;
+            socket.data.userId = decoded.id || decoded.userId;
             next();
         } catch {
             next(new Error('Invalid or expired token'));
@@ -72,6 +72,29 @@ export function initializeSocket(httpServer: HttpServer): SocketIOServer {
             boardId,
             activeUsers,
         });
+        });
+
+        socket.on('task:drag-start', ({ boardId, taskId, userName }: { boardId: string; taskId: string; userName: string }) => {
+          socket.to(`board:${boardId}`).emit('task:drag-started', {
+            taskId,
+            userId: socket.data.userId,
+            userName,
+          });
+        });
+
+        socket.on('task:drag-end', ({ boardId, taskId }: { boardId: string; taskId: string }) => {
+          socket.to(`board:${boardId}`).emit('task:drag-ended', {
+            taskId,
+          });
+        });
+
+        socket.on('task:typing', ({ boardId, taskId, userName, isTyping }: { boardId: string; taskId: string; userName: string; isTyping: boolean }) => {
+          socket.to(`board:${boardId}`).emit('task:typing-status', {
+            taskId,
+            userId: socket.data.userId,
+            userName,
+            isTyping,
+          });
         });
 
         socket.on('disconnect', async () => {

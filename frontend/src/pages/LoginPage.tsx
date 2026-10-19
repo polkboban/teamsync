@@ -42,7 +42,7 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-svh bg-graphite-bg text-graphite-ink font-jost selection:bg-graphite-orange selection:text-graphite-fieldInk p-2 sm:p-3 flex flex-col justify-between space-y-2">
       {/* Top Nav Tile */}
-      <nav className="grid grid-cols-12 gap-2">
+      <nav className="grid grid-cols-12 gap-4">
         <div className="col-span-6 sm:col-span-3 h-14 bg-graphite-surface rounded-lg flex items-center px-4">
           <Link to="/" className="font-jost text-lg font-bold tracking-tight text-graphite-ink">
             TEAMSYNC
@@ -164,7 +164,7 @@ export const LoginPage: React.FC = () => {
       {/* Footer Strip */}
       <footer className="h-10 bg-graphite-surface rounded-lg px-4 flex items-center justify-between text-xs text-graphite-muted">
         <span>TeamSync Authentication Protocol</span>
-        <span>All systems operational</span>
+        <span>github.com/polkboban</span>
       </footer>
     </div>
   );

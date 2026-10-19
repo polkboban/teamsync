@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import type { Workspace } from '../types';
-import { Bell, LogOut, Check, UserPlus, ChevronDown, Plus } from 'lucide-react';
+import { Bell, LogOut, Check, UserPlus, ChevronDown, Plus, Search } from 'lucide-react';
 
 interface NavbarProps {
   currentWorkspace: Workspace | null;
@@ -11,6 +11,7 @@ interface NavbarProps {
   onSelectWorkspace: (ws: Workspace) => void;
   onOpenCreateWorkspace: () => void;
   onOpenInvite: () => void;
+  onOpenCommandPalette?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -19,6 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSelectWorkspace,
   onOpenCreateWorkspace,
   onOpenInvite,
+  onOpenCommandPalette,
 }) => {
   const { user, logout } = useAuth();
   const { isConnected, notifications, clearNotifications } = useSocket();
@@ -100,6 +102,22 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         )}
       </div>
+
+      {/* Center: Command Palette Trigger */}
+      {onOpenCommandPalette && (
+        <button
+          onClick={onOpenCommandPalette}
+          data-ui="command-palette-trigger"
+          className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-graphite-bg hover:bg-graphite-elevated text-graphite-muted hover:text-graphite-ink transition text-xs border border-graphite-bg"
+          title="Open Command Palette (Ctrl+K / Cmd+K)"
+        >
+          <Search className="w-3.5 h-3.5 text-graphite-orange" />
+          <span className="hidden sm:inline">Search or command...</span>
+          <kbd className="px-1.5 py-0.5 rounded bg-graphite-surface text-[10px] text-graphite-muted border border-graphite-elevated font-semibold">
+            ⌘K
+          </kbd>
+        </button>
+      )}
 
       {/* Right: Socket Status, Notifications, Profile */}
       <div className="flex items-center space-x-3">

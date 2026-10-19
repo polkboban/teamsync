@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import type { Task, WorkspaceMember } from '../types';
-import { UserPlus, GripVertical } from 'lucide-react';
+import { UserPlus, GripVertical, CheckSquare } from 'lucide-react';
 
 interface TaskCardProps {
   task: Task;
@@ -9,6 +9,7 @@ interface TaskCardProps {
   members: WorkspaceMember[];
   onAssignTask: (taskId: string, assigneeId: string | null) => void;
   onClick?: () => void;
+  remoteDragging?: { userId: string; userName: string };
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({
@@ -17,6 +18,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   members,
   onAssignTask,
   onClick,
+  remoteDragging,
 }) => {
   const [showAssigneeMenu, setShowAssigneeMenu] = useState(false);
 
@@ -31,9 +33,19 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           className={`group bg-graphite-bg hover:bg-graphite-elevated text-graphite-ink rounded-lg p-3.5 transition select-none relative cursor-pointer active:scale-[0.99] font-jost ${
             snapshot.isDragging
               ? 'ring-2 ring-graphite-orange bg-graphite-elevated rotate-[1deg] scale-[1.02] z-50'
+              : remoteDragging
+              ? 'ring-2 ring-graphite-orange/70 bg-graphite-elevated/80'
               : ''
           }`}
         >
+          {/* Peer Dragging Ghost Badge */}
+          {remoteDragging && (
+            <div className="flex items-center space-x-1.5 px-2 py-0.5 rounded bg-graphite-orange/15 text-graphite-orange text-[10px] font-bold mb-2 animate-in fade-in duration-150">
+              <span className="w-1.5 h-1.5 rounded-full bg-graphite-orange" />
+              <span>{remoteDragging.userName} is moving this...</span>
+            </div>
+          )}
+
           {/* Header & Drag Handle */}
           <div className="flex items-start justify-between gap-2">
             <h4 className="text-xs font-bold text-graphite-ink group-hover:text-white transition leading-snug break-words flex-1">
@@ -56,11 +68,29 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </p>
           )}
 
-          {/* Card Footer: Task ID & Assignee */}
+          {/* Card Footer: Task ID, Subtask Progress & Assignee */}
           <div className="flex items-center justify-between mt-3 text-[11px]">
-            <span className="text-[10px] text-graphite-orange font-bold">
-              #{task.id.slice(0, 5)}
-            </span>
+            <div className="flex items-center space-x-2">
+              <span className="text-[10px] text-graphite-orange font-bold">
+                #{task.id.slice(0, 5)}
+              </span>
+
+              {task.checklist && task.checklist.length > 0 && (
+                <div
+                  className={`flex items-center space-x-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                    task.checklist.filter((c) => c.isDone).length === task.checklist.length
+                      ? 'bg-emerald-500/15 text-emerald-400'
+                      : 'bg-graphite-surface text-graphite-muted'
+                  }`}
+                  title={`${task.checklist.filter((c) => c.isDone).length} of ${task.checklist.length} subtasks completed`}
+                >
+                  <CheckSquare className="w-3 h-3 text-graphite-orange" />
+                  <span>
+                    {task.checklist.filter((c) => c.isDone).length}/{task.checklist.length}
+                  </span>
+                </div>
+              )}
+            </div>
 
             {/* Assignee Avatar / Selector */}
             <div className="relative" onClick={(e) => e.stopPropagation()}>

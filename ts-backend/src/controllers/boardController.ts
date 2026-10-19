@@ -43,7 +43,7 @@ export const createBoard = async (req: AuthRequest, res: Response): Promise<void
     res.status(201).json({ message: 'Board created successfully', board });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ errors: (error as any).issues || (error as any).errors });
     } else {
       console.error(error);
       res.status(500).json({ error: 'Internal server error' });
@@ -54,7 +54,7 @@ export const createBoard = async (req: AuthRequest, res: Response): Promise<void
 // 2. GET BOARDS FOR A WORKSPACE
 export const getWorkspaceBoards = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { workspaceId } = req.params;
+    const workspaceId = req.params.workspaceId as string;
     const userId = req.userId!;
 
     // Security Check: Is the user a member?

@@ -59,7 +59,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ errors: (error as any).issues || (error as any).errors });
     } else {
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -100,7 +100,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ errors: (error as any).issues || (error as any).errors });
     } else {
       res.status(500).json({ error: 'Internal server error' });
     }

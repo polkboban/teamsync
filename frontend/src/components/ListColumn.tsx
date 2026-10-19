@@ -10,6 +10,7 @@ interface ListColumnProps {
   onAddTask: (listId: string, title: string, description?: string) => Promise<void>;
   onAssignTask: (taskId: string, assigneeId: string | null) => void;
   onTaskClick?: (task: Task) => void;
+  remoteDraggingTasks?: Record<string, { userId: string; userName: string }>;
 }
 
 export const ListColumn: React.FC<ListColumnProps> = ({
@@ -18,6 +19,7 @@ export const ListColumn: React.FC<ListColumnProps> = ({
   onAddTask,
   onAssignTask,
   onTaskClick,
+  remoteDraggingTasks,
 }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [taskTitle, setTaskTitle] = useState('');
@@ -45,9 +47,9 @@ export const ListColumn: React.FC<ListColumnProps> = ({
       className="w-72 shrink-0 bg-graphite-surface rounded-xl flex flex-col max-h-[calc(100vh-8rem)] font-jost"
     >
       {/* Column Header */}
-      <div className="p-3 pb-2 flex items-center justify-between border-b border-graphite-bg select-none">
+      <div data-ui="column-header" className="p-3 pb-2 flex items-center justify-between border-b border-graphite-bg select-none">
         <div className="flex items-center space-x-2">
-          <h3 className="font-bold text-xs text-graphite-ink tracking-tight uppercase">
+          <h3 className="font-bold text-xs text-graphite-ink tracking-tight">
             {list.title}
           </h3>
           <span className="px-2 py-0.5 rounded bg-graphite-bg text-[10px] font-bold text-graphite-muted">
@@ -82,6 +84,7 @@ export const ListColumn: React.FC<ListColumnProps> = ({
                 members={members}
                 onAssignTask={onAssignTask}
                 onClick={() => onTaskClick?.(task)}
+                remoteDragging={remoteDraggingTasks?.[task.id]}
               />
             ))}
             {provided.placeholder}

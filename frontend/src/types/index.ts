@@ -29,6 +29,15 @@ export interface Workspace {
   members?: WorkspaceMember[];
 }
 
+export interface ChecklistItem {
+  id: string;
+  title: string;
+  isDone: boolean;
+  order: number;
+  createdAt: string;
+  taskId: string;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -42,6 +51,7 @@ export interface Task {
     name: string;
     email: string;
   } | null;
+  checklist?: ChecklistItem[];
   createdAt: string;
   updatedAt: string;
 }
@@ -75,4 +85,32 @@ export interface NotificationPayload {
   taskId?: string;
   boardId?: string;
   createdAt: string;
+}
+
+export interface Comment {
+  id: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  taskId: string;
+  userId: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+export interface TaskActivity {
+  id: string;
+  action: string;
+  details?: string | null;
+  createdAt: string;
+  taskId: string;
+  userId?: string | null;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
 }

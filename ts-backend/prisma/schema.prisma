@@ -19,6 +19,8 @@ model User {
 
   workspaces WorkspaceMember[]
   tasks      Task[]            @relation("TaskAssignees")
+  comments   Comment[]
+  activities TaskActivity[]
 }
 
 model Workspace {
@@ -89,6 +91,48 @@ model Task {
   assigneeId  String?
   assignee    User?     @relation("TaskAssignees", fields: [assigneeId], references: [id])
   
+  comments    Comment[]
+  activities  TaskActivity[]
+  checklist   ChecklistItem[]
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+model ChecklistItem {
+  id        String   @id @default(uuid())
+  title     String
+  isDone    Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TaskActivity {
+  id        String   @id @default(uuid())
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 }

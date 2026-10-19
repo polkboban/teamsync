@@ -53,7 +53,7 @@ export const createList = async (req: AuthRequest, res: Response): Promise<void>
     res.status(201).json({ message: 'List created successfully', list });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ errors: (error as any).issues || (error as any).errors });
     } else {
       console.error(error);
       res.status(500).json({ error: 'Internal server error' });
@@ -64,7 +64,7 @@ export const createList = async (req: AuthRequest, res: Response): Promise<void>
 // 2. GET ALL LISTS FOR A BOARD (WITH TASKS)
 export const getBoardLists = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { boardId } = req.params;
+    const boardId = req.params.boardId as string;
     const userId = req.userId!;
 
     // Security Check
@@ -89,6 +89,10 @@ export const getBoardLists = async (req: AuthRequest, res: Response): Promise<vo
       include: {
         tasks: {
           orderBy: { order: 'asc' },
+          include: {
+            assignee: { select: { id: true, name: true, email: true } },
+            checklist: { orderBy: { createdAt: 'asc' } },
+          },
         },
       },
     });
