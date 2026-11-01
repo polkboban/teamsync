@@ -38,6 +38,11 @@ jobs:
   backend-quality:
     name: Backend Typecheck & Prisma Validation
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "postgresql://postgres:password123@localhost:5432/teamsync?schema=public"
+      JWT_SECRET: "ci-test-jwt-secret-key-12345"
+      JWT_EXPIRES_IN: "7d"
+      CLIENT_URL: "http://localhost:3000"
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
