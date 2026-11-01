@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: teamsync-postgres
+    container_name: teamsync-prod-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -19,7 +19,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: teamsync-redis
+    container_name: teamsync-prod-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -35,7 +35,7 @@ services:
     build:
       context: ./ts-backend
       dockerfile: Dockerfile
-    container_name: teamsync-backend
+    container_name: teamsync-prod-backend
     restart: unless-stopped
     ports:
       - "5000:5000"
@@ -57,7 +57,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: teamsync-frontend
+    container_name: teamsync-prod-frontend
     restart: unless-stopped
     ports:
       - "3000:80"
