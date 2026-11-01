@@ -21,7 +21,7 @@ export default {
           elevated: '#2d3035',
           ink: '#eff0f1',
           muted: '#9c9ea3',
-          orange: '#ff4a1f',
+          orange: 'var(--color-accent, #ff4a1f)',
           field: '#eff0f1',
           fieldInk: '#18191b',
         },

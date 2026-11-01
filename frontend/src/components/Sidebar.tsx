@@ -1,6 +1,16 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import type { Board, WorkspaceMember } from '../types';
-import { Kanban, Plus, UserPlus, LayoutGrid, Shield } from 'lucide-react';
+import {
+  Kanban,
+  Plus,
+  UserPlus,
+  LayoutGrid,
+  Shield,
+  X,
+  Layers,
+  Settings
+} from 'lucide-react';
 
 interface SidebarProps {
   boards: Board[];
@@ -9,6 +19,8 @@ interface SidebarProps {
   onOpenCreateBoard: () => void;
   members: WorkspaceMember[];
   onOpenInvite: () => void;
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -18,16 +30,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenCreateBoard,
   members,
   onOpenInvite,
+  isMobileOpen = false,
+  onCloseMobile,
 }) => {
-  return (
-    <aside
-      data-ui="sidebar"
-      className="w-64 bg-graphite-surface flex flex-col h-[calc(100vh-3.5rem)] shrink-0 select-none font-jost"
-    >
-      {/* Workspace Hub & Directory Navigation */}
-      <div className="p-3 pb-1 border-b border-graphite-bg">
+  const content = (
+    <div className="flex flex-col h-full justify-between select-none font-jost">
+      {/* Top Header on Mobile */}
+      <div data-ui="mobile-sidebar-header" className="p-3 border-b border-graphite-bg flex md:hidden items-center justify-between">
+        <span className="font-bold text-sm text-graphite-ink uppercase tracking-wider">
+          Navigation
+        </span>
         <button
-          onClick={() => onSelectBoard(null)}
+          onClick={onCloseMobile}
+          className="p-1.5 rounded-lg text-graphite-muted hover:text-graphite-ink hover:bg-graphite-bg transition"
+          title="Close sidebar"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Main Nav Links: Workspace Hub & Directory */}
+      <div data-ui="sidebar-nav" className="p-3 space-y-1 border-b border-graphite-bg">
+        <button
+          onClick={() => {
+            onSelectBoard(null);
+            if (onCloseMobile) onCloseMobile();
+          }}
           className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition text-left ${
             selectedBoardId === null
               ? 'bg-graphite-orange text-graphite-fieldInk'
@@ -42,6 +70,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {boards.length}
           </span>
         </button>
+
+        <Link
+          to="/app/workspaces"
+          onClick={() => {
+            if (onCloseMobile) onCloseMobile();
+          }}
+          className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-bold text-graphite-muted hover:text-graphite-ink hover:bg-graphite-bg transition text-left"
+        >
+          <Layers className="w-4 h-4 text-graphite-orange" />
+          <span>Workspaces Directory</span>
+        </Link>
+
+        <Link
+          to="/app/settings"
+          onClick={() => {
+            if (onCloseMobile) onCloseMobile();
+          }}
+          className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-bold text-graphite-muted hover:text-graphite-ink hover:bg-graphite-bg transition text-left"
+        >
+          <Settings className="w-4 h-4 text-graphite-orange" />
+          <span>Theme & Settings</span>
+        </Link>
       </div>
 
       {/* Boards Section */}
@@ -55,7 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className="p-1 hover:bg-graphite-bg text-graphite-muted hover:text-graphite-ink rounded transition"
             title="Create board"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-3.5 h-3.5 text-graphite-orange" />
           </button>
         </div>
 
@@ -76,7 +126,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               return (
                 <button
                   key={b.id}
-                  onClick={() => onSelectBoard(b.id)}
+                  onClick={() => {
+                    onSelectBoard(b.id);
+                    if (onCloseMobile) onCloseMobile();
+                  }}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition text-left ${
                     isActive
                       ? 'bg-graphite-orange text-graphite-fieldInk font-bold'
@@ -105,7 +158,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className="p-1 hover:bg-graphite-bg text-graphite-muted hover:text-graphite-ink rounded transition"
             title="Invite member"
           >
-            <UserPlus className="w-3.5 h-3.5" />
+            <UserPlus className="w-3.5 h-3.5 text-graphite-orange" />
           </button>
         </div>
 
@@ -123,7 +176,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   {m.user.name}
                 </span>
               </div>
-              <span className="text-[9px] px-1.5 py-0.2 rounded bg-graphite-bg text-graphite-muted font-bold flex items-center space-x-1">
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-graphite-bg text-graphite-muted font-bold flex items-center space-x-1">
                 {m.role === 'OWNER' && <Shield className="w-2.5 h-2.5 text-graphite-orange" />}
                 <span>{m.role}</span>
               </span>
@@ -131,6 +184,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
           ))}
         </div>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar (hidden on mobile) */}
+      <aside data-ui="sidebar" className="hidden md:flex w-64 bg-graphite-surface border-r border-graphite-bg flex-col h-[calc(100dvh-3.5rem)] shrink-0 select-none font-jost">
+        {content}
+      </aside>
+
+      {/* Mobile Slide-Over Drawer with Backdrop */}
+      {isMobileOpen && (
+        <div className="fixed inset-0 z-40 md:hidden flex">
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150"
+            onClick={onCloseMobile}
+          />
+          <aside data-ui="mobile-drawer" className="relative z-50 w-72 max-w-[85vw] bg-graphite-surface border-r border-graphite-bg h-full flex flex-col animate-in slide-in-from-left duration-200">
+            {content}
+          </aside>
+        </div>
+      )}
+    </>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Board, Task } from '../types';
 import {
   Search,
@@ -11,7 +12,8 @@ import {
   Activity,
   ArrowRight,
   X,
-  FileText
+  FileText,
+  Settings
 } from 'lucide-react';
 
 interface CommandItem {
@@ -51,6 +53,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   currentView,
   onSwitchView,
 }) => {
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -99,6 +102,34 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         onClose();
       },
       keywords: ['hub', 'home', 'overview', 'dashboard', 'directory']
+    });
+
+    // Navigation: Workspaces Directory
+    items.push({
+      id: 'nav-workspaces',
+      category: 'Navigation',
+      title: 'Workspaces Directory',
+      subtitle: 'Manage and switch between team workspaces',
+      icon: <Layers className="w-4 h-4 text-graphite-orange" />,
+      action: () => {
+        navigate('/app/workspaces');
+        onClose();
+      },
+      keywords: ['workspaces', 'organizations', 'teams', 'directory']
+    });
+
+    // Navigation: Theme & Settings
+    items.push({
+      id: 'nav-settings',
+      category: 'Navigation',
+      title: 'Theme & App Settings',
+      subtitle: 'Customize accent color, profile, and preferences',
+      icon: <Settings className="w-4 h-4 text-graphite-orange" />,
+      action: () => {
+        navigate('/app/settings');
+        onClose();
+      },
+      keywords: ['settings', 'theme', 'color', 'accent', 'orange', 'profile']
     });
 
     // Navigation: Boards

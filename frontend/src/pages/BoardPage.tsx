@@ -15,6 +15,7 @@ import { CommandPalette } from '../components/CommandPalette';
 import { CreateWorkspaceModal } from '../components/CreateWorkspaceModal';
 import { CreateBoardModal } from '../components/CreateBoardModal';
 import { InviteModal } from '../components/InviteModal';
+import { GettingStartedModal } from '../components/GettingStartedModal';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -27,7 +28,10 @@ import {
   ArrowRight,
   Clock,
   CheckCircle2,
-  ArrowLeft
+  ArrowLeft,
+  Layers,
+  Settings,
+  Search
 } from 'lucide-react';
 
 export const BoardPage: React.FC = () => {
@@ -42,6 +46,17 @@ export const BoardPage: React.FC = () => {
   const [isCreateBoardOpen, setIsCreateBoardOpen] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+
+  // Auto-launch getting started tutorial for first-time visitors
+  useEffect(() => {
+    const hasSeen = localStorage.getItem('teamsync_tutorial_completed');
+    if (!hasSeen) {
+      const timer = setTimeout(() => setIsTutorialOpen(true), 600);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   // Global Ctrl+K / Cmd+K listener
   useEffect(() => {
@@ -341,6 +356,8 @@ export const BoardPage: React.FC = () => {
         onOpenCreateWorkspace={() => setIsCreateWsOpen(true)}
         onOpenInvite={() => setIsInviteOpen(true)}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+        onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
+        onOpenTutorial={() => setIsTutorialOpen(true)}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -358,6 +375,8 @@ export const BoardPage: React.FC = () => {
           onOpenCreateBoard={() => setIsCreateBoardOpen(true)}
           members={members}
           onOpenInvite={() => setIsInviteOpen(true)}
+          isMobileOpen={isMobileSidebarOpen}
+          onCloseMobile={() => setIsMobileSidebarOpen(false)}
         />
 
         {/* Main Content Area */}
@@ -366,9 +385,31 @@ export const BoardPage: React.FC = () => {
           {/* LAYER 1: WORKSPACE HUB & BOARDS DIRECTORY (When no board is selected) */}
           {/* ========================================================================= */}
           {!selectedBoardId ? (
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
-              {/* Workspace Header Tile */}
-              <div className="bg-graphite-field text-graphite-fieldInk rounded-xl p-6 sm:p-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 pb-20 md:pb-6 space-y-4">
+              {/* ZERO WORKSPACE GUIDANCE: If user hasn't created a workspace yet */}
+              {!isLoadingWs && workspaces.length === 0 ? (
+                <div className="p-8 sm:p-12 rounded-2xl bg-graphite-surface border-2 border-dashed border-graphite-elevated text-center space-y-4 max-w-lg mx-auto my-8">
+                  <div className="w-14 h-14 rounded-2xl bg-graphite-bg text-graphite-orange flex items-center justify-center mx-auto border border-graphite-elevated">
+                    <Layers className="w-7 h-7" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-graphite-ink">Welcome to TeamSync!</h3>
+                    <p className="text-xs text-graphite-muted leading-relaxed">
+                      Before creating boards and tasks, you need a workspace for your team. Workspaces organize all your sprint boards, lists, and members.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsCreateWsOpen(true)}
+                    className="px-6 py-2.5 bg-graphite-orange text-graphite-fieldInk font-bold text-xs rounded-xl hover:opacity-90 active:scale-[0.98] transition inline-flex items-center space-x-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Create Your First Workspace</span>
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Workspace Header Tile */}
+                  <div className="bg-graphite-field text-graphite-fieldInk rounded-xl p-6 sm:p-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
                   <span className="text-xs font-bold tracking-normal uppercase">
                     WORKSPACE HUB
@@ -474,6 +515,8 @@ export const BoardPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+                </>
+              )}
             </div>
           ) : (
             /* ========================================================================= */
@@ -504,41 +547,41 @@ export const BoardPage: React.FC = () => {
                 </div>
 
                 {/* Center: View Switcher (Kanban, List, Activity) */}
-                <div className="hidden md:flex bg-graphite-bg rounded-lg p-1 text-xs">
+                <div className="flex bg-graphite-bg rounded-lg p-0.5 sm:p-1 text-xs">
                   <button
                     onClick={() => setViewMode('kanban')}
-                    className={`px-3 py-1 rounded font-bold transition flex items-center space-x-1.5 ${
+                    className={`px-2 sm:px-3 py-1 rounded font-bold transition flex items-center space-x-1 sm:space-x-1.5 ${
                       viewMode === 'kanban'
                         ? 'bg-graphite-surface text-graphite-orange'
                         : 'text-graphite-muted hover:text-graphite-ink'
                     }`}
                   >
                     <LayoutGrid className="w-3.5 h-3.5" />
-                    <span>Kanban</span>
+                    <span className="hidden sm:inline">Kanban</span>
                   </button>
 
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`px-3 py-1 rounded font-bold transition flex items-center space-x-1.5 ${
+                    className={`px-2 sm:px-3 py-1 rounded font-bold transition flex items-center space-x-1 sm:space-x-1.5 ${
                       viewMode === 'list'
                         ? 'bg-graphite-surface text-graphite-orange'
                         : 'text-graphite-muted hover:text-graphite-ink'
                     }`}
                   >
                     <ListIcon className="w-3.5 h-3.5" />
-                    <span>List</span>
+                    <span className="hidden sm:inline">List</span>
                   </button>
 
                   <button
                     onClick={() => setViewMode('activity')}
-                    className={`px-3 py-1 rounded font-bold transition flex items-center space-x-1.5 ${
+                    className={`px-2 sm:px-3 py-1 rounded font-bold transition flex items-center space-x-1 sm:space-x-1.5 ${
                       viewMode === 'activity'
                         ? 'bg-graphite-surface text-graphite-orange'
                         : 'text-graphite-muted hover:text-graphite-ink'
                     }`}
                   >
                     <Activity className="w-3.5 h-3.5" />
-                    <span>Activity</span>
+                    <span className="hidden sm:inline">Activity</span>
                   </button>
                 </div>
 
@@ -564,7 +607,7 @@ export const BoardPage: React.FC = () => {
               </div>
 
               {/* View Content Area */}
-              <div className="flex-1 overflow-x-auto p-4 sm:p-5">
+              <div className="flex-1 overflow-x-auto p-4 sm:p-5 pb-20 md:pb-5">
                 {isLoadingLists ? (
                   <div className="h-full flex flex-col items-center justify-center text-graphite-muted space-y-2">
                     <Loader2 className="w-7 h-7 animate-spin text-graphite-orange" />
@@ -773,6 +816,54 @@ export const BoardPage: React.FC = () => {
           workspaceName={currentWorkspace.name}
         />
       )}
+
+      {/* Getting Started First-Time User Tutorial */}
+      <GettingStartedModal
+        isOpen={isTutorialOpen}
+        onClose={() => setIsTutorialOpen(false)}
+      />
+
+      {/* Mobile Bottom Navigation Bar (Phone-Friendly) */}
+      <nav data-ui="mobile-bottom-bar" className="md:hidden fixed bottom-0 left-0 right-0 h-14 bg-graphite-surface border-t border-graphite-bg z-30 flex items-center justify-around px-2 select-none">
+        <button
+          onClick={() => {
+            if (selectedBoardId) navigate('/app');
+            else setIsMobileSidebarOpen(true);
+          }}
+          className={`flex flex-col items-center justify-center space-y-0.5 text-[10px] font-bold ${
+            !selectedBoardId ? 'text-graphite-orange' : 'text-graphite-muted'
+          }`}
+        >
+          <Kanban className="w-4 h-4" />
+          <span>Boards</span>
+        </button>
+
+        <button
+          onClick={() => navigate('/app/workspaces')}
+          className="flex flex-col items-center justify-center space-y-0.5 text-[10px] font-bold text-graphite-muted hover:text-graphite-ink"
+        >
+          <Layers className="w-4 h-4" />
+          <span>Workspaces</span>
+        </button>
+
+        <button
+          onClick={() => setIsCommandPaletteOpen(true)}
+          className="flex flex-col items-center justify-center space-y-0.5 text-[10px] font-bold text-graphite-orange"
+        >
+          <div className="w-7 h-7 rounded-lg bg-graphite-bg border border-graphite-elevated flex items-center justify-center">
+            <Search className="w-3.5 h-3.5" />
+          </div>
+          <span>Search</span>
+        </button>
+
+        <button
+          onClick={() => navigate('/app/settings')}
+          className="flex flex-col items-center justify-center space-y-0.5 text-[10px] font-bold text-graphite-muted hover:text-graphite-ink"
+        >
+          <Settings className="w-4 h-4" />
+          <span>Settings</span>
+        </button>
+      </nav>
 
       {/* Command Palette (Ctrl+K / Cmd+K) */}
       <CommandPalette

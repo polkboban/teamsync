@@ -241,13 +241,13 @@ export const LandingPage: React.FC = () => {
 
       {/* 1. TOP NAV BAR: FITTED TILES */}
       <nav className="grid grid-cols-12 gap-2 sticky top-2 z-40">
-        <div className="col-span-3 sm:col-span-2 h-14 bg-graphite-surface rounded-lg flex items-center px-4">
-          <Link to="/" className="font-jost text-lg font-bold tracking-tight text-graphite-ink">
-            github.com/polkboban
+        <div className="col-span-6 md:col-span-3 lg:col-span-2 h-14 bg-graphite-surface rounded-lg flex items-center px-3 sm:px-4 truncate">
+          <Link to="/" className="font-jost text-base sm:text-lg font-bold tracking-tight text-graphite-ink truncate">
+            TEAMSYNC
           </Link>
         </div>
 
-        <div className="col-span-5 sm:col-span-6 h-14 bg-graphite-surface rounded-lg flex items-center px-4 sm:px-8 space-x-6">
+        <div className="hidden md:flex md:col-span-5 lg:col-span-6 h-14 bg-graphite-surface rounded-lg items-center px-4 sm:px-8 space-x-4 lg:space-x-6">
           <a href="#studio" className="text-xs sm:text-sm font-medium text-graphite-muted hover:text-graphite-ink transition">
             Live Studio
           </a>
@@ -262,30 +262,30 @@ export const LandingPage: React.FC = () => {
           </a>
         </div>
 
-        <div className="col-span-4 sm:col-span-4 h-14 flex items-center justify-end space-x-2">
+        <div className="col-span-6 md:col-span-4 h-14 flex items-center justify-end space-x-1.5 sm:space-x-2">
           {user ? (
             <Link
               to="/app"
-              className="h-14 px-5 bg-graphite-orange text-graphite-fieldInk font-bold text-xs sm:text-sm rounded-lg flex items-center space-x-2 hover:opacity-90 active:scale-[0.98] transition"
+              className="h-14 px-3 sm:px-5 bg-graphite-orange text-graphite-fieldInk font-bold text-xs sm:text-sm rounded-lg flex items-center space-x-1.5 sm:space-x-2 hover:opacity-90 active:scale-[0.98] transition"
             >
-              <span>Go to Workspace</span>
+              <span>Workspace</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           ) : (
             <>
               <Link
                 to="/login"
-                className="h-14 px-4 bg-graphite-surface text-graphite-ink font-medium text-xs sm:text-sm rounded-lg hidden sm:flex items-center hover:bg-graphite-elevated transition"
+                className="h-14 px-3 sm:px-4 bg-graphite-surface text-graphite-ink font-medium text-xs sm:text-sm rounded-lg hidden sm:flex items-center hover:bg-graphite-elevated transition"
               >
                 Sign in
               </Link>
               <button
                 onClick={handleDemoClick}
                 disabled={isDemoLoading}
-                className="h-14 px-4 sm:px-6 bg-graphite-orange text-graphite-fieldInk font-bold text-xs sm:text-sm rounded-lg flex items-center space-x-2 hover:opacity-90 active:scale-[0.98] transition"
+                className="h-14 px-3 sm:px-6 bg-graphite-orange text-graphite-fieldInk font-bold text-xs sm:text-sm rounded-lg flex items-center space-x-1.5 sm:space-x-2 hover:opacity-90 active:scale-[0.98] transition"
               >
-                <Sparkles className="w-4 h-4" />
-                <span>{isDemoLoading ? 'Loading demo...' : 'Launch Demo'}</span>
+                <Sparkles className="w-4 h-4 shrink-0" />
+                <span>{isDemoLoading ? 'Loading...' : 'Launch Demo'}</span>
               </button>
             </>
           )}

@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-canvas text-zinc-100 min-h-screen antialiased font-sans;
+    @apply bg-canvas text-zinc-100 min-h-svh antialiased font-sans;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
@@ -34,6 +34,9 @@
 
 /* Motion tokens and reveal helpers */
 :root {
+  --color-accent: #ff4a1f;
+  --color-accent-hover: #ff623b;
+  --color-accent-subtle: rgba(255, 74, 31, 0.15);
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
 }

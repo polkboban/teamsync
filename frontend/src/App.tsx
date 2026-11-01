@@ -7,6 +7,9 @@ import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { BoardPage } from './pages/BoardPage';
+import { WorkspacesPage } from './pages/WorkspacesPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { ThemeProvider } from './context/ThemeContext';
 import { InvitePage } from './pages/InvitePage';
 import { Loader2 } from 'lucide-react';
 
@@ -25,7 +28,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-canvas flex flex-col items-center justify-center text-zinc-400 space-y-3 font-sans">
+      <div className="min-h-svh bg-canvas flex flex-col items-center justify-center text-zinc-400 space-y-3 font-sans">
         <Loader2 className="w-8 h-8 animate-spin text-accent" />
         <span className="text-xs font-medium text-zinc-400">Connecting to TeamSync...</span>
       </div>
@@ -44,7 +47,7 @@ const PublicOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-canvas flex flex-col items-center justify-center text-zinc-400 space-y-3 font-sans">
+      <div className="min-h-svh bg-canvas flex flex-col items-center justify-center text-zinc-400 space-y-3 font-sans">
         <Loader2 className="w-8 h-8 animate-spin text-accent" />
       </div>
     );
@@ -61,7 +64,8 @@ export const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <SocketProvider>
+        <ThemeProvider>
+          <SocketProvider>
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<LandingPage />} />
@@ -70,6 +74,22 @@ export const App: React.FC = () => {
                 element={
                   <ProtectedRoute>
                     <BoardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/app/workspaces"
+                element={
+                  <ProtectedRoute>
+                    <WorkspacesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/app/settings"
+                element={
+                  <ProtectedRoute>
+                    <SettingsPage />
                   </ProtectedRoute>
                 }
               />
@@ -101,7 +121,8 @@ export const App: React.FC = () => {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>
-        </SocketProvider>
+          </SocketProvider>
+        </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

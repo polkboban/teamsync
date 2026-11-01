@@ -3,7 +3,20 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import type { Workspace } from '../types';
-import { Bell, LogOut, Check, UserPlus, ChevronDown, Plus, Search } from 'lucide-react';
+import {
+  Bell,
+  LogOut,
+  Check,
+  UserPlus,
+  ChevronDown,
+  Plus,
+  Search,
+  Menu,
+  Layers,
+  Settings,
+  HelpCircle,
+  Kanban
+} from 'lucide-react';
 
 interface NavbarProps {
   currentWorkspace: Workspace | null;
@@ -12,6 +25,8 @@ interface NavbarProps {
   onOpenCreateWorkspace: () => void;
   onOpenInvite: () => void;
   onOpenCommandPalette?: () => void;
+  onToggleMobileSidebar?: () => void;
+  onOpenTutorial?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -21,6 +36,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenCreateWorkspace,
   onOpenInvite,
   onOpenCommandPalette,
+  onToggleMobileSidebar,
+  onOpenTutorial,
 }) => {
   const { user, logout } = useAuth();
   const { isConnected, notifications, clearNotifications } = useSocket();
@@ -29,12 +46,23 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
   return (
-    <header data-ui="navbar" className="h-14 bg-graphite-surface border-b border-graphite-bg flex items-center justify-between px-4 sticky top-0 z-30 select-none font-jost">
-      {/* Left: Brand & Workspace Selector */}
-      <div className="flex items-center space-x-3 sm:space-x-4">
+    <header data-ui="navbar" className="h-14 bg-graphite-surface border-b border-graphite-bg flex items-center justify-between px-3 sm:px-4 sticky top-0 z-30 select-none font-jost shrink-0">
+      {/* Left: Hamburger, Brand & Workspace Selector */}
+      <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+        {/* Mobile Hamburger Menu Toggle */}
+        {onToggleMobileSidebar && (
+          <button
+            onClick={onToggleMobileSidebar}
+            className="p-1.5 md:hidden rounded-lg bg-graphite-bg text-graphite-ink hover:bg-graphite-elevated transition"
+            title="Toggle sidebar menu"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+        )}
+
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2 text-graphite-ink hover:opacity-90 transition">
-          <span className="font-jost text-lg font-bold tracking-tight text-graphite-ink">
+        <Link to="/" className="flex items-center space-x-1.5 text-graphite-ink hover:opacity-90 transition shrink-0">
+          <span className="font-jost text-base sm:text-lg font-bold tracking-tight text-graphite-ink">
             TEAMSYNC
           </span>
         </Link>
@@ -45,18 +73,25 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="relative">
           <button
             onClick={() => setShowWsDropdown(!showWsDropdown)}
-            className="flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-graphite-bg text-graphite-ink hover:bg-graphite-elevated transition"
+            className="flex items-center space-x-1.5 sm:space-x-2 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold bg-graphite-bg text-graphite-ink hover:bg-graphite-elevated transition"
           >
-            <span className="max-w-[150px] truncate">
+            <span className="max-w-[100px] sm:max-w-[150px] truncate">
               {currentWorkspace ? currentWorkspace.name : 'Select workspace'}
             </span>
-            <ChevronDown className="w-3.5 h-3.5 text-graphite-muted" />
+            <ChevronDown className="w-3.5 h-3.5 text-graphite-muted shrink-0" />
           </button>
 
           {showWsDropdown && (
-            <div data-ui="dropdown" className="absolute left-0 mt-2 w-64 bg-graphite-surface border border-graphite-bg rounded-lg py-1 z-50 animate-in fade-in duration-100">
-              <div className="px-3 py-2 text-[11px] font-bold text-graphite-muted">
-                Your Workspaces
+            <div data-ui="dropdown" className="absolute left-0 mt-2 w-64 bg-graphite-surface border border-graphite-bg rounded-lg py-1 z-50 animate-in fade-in duration-100 shadow-xl">
+              <div className="px-3 py-2 text-[11px] font-bold text-graphite-muted flex items-center justify-between">
+                <span>Your Workspaces</span>
+                <Link
+                  to="/app/workspaces"
+                  onClick={() => setShowWsDropdown(false)}
+                  className="text-graphite-orange hover:underline text-[10px]"
+                >
+                  View All ({workspaces.length})
+                </Link>
               </div>
               <div className="max-h-56 overflow-y-auto">
                 {workspaces.map((ws) => (
@@ -88,19 +123,39 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <Plus className="w-4 h-4 text-graphite-orange" />
                 <span>+ Create workspace</span>
               </button>
+              {currentWorkspace && (
+                <button
+                  onClick={() => {
+                    setShowWsDropdown(false);
+                    onOpenInvite();
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs text-graphite-muted hover:text-graphite-ink hover:bg-graphite-bg flex items-center space-x-2 transition font-bold"
+                >
+                  <UserPlus className="w-4 h-4 text-graphite-orange" />
+                  <span>+ Invite team</span>
+                </button>
+              )}
             </div>
           )}
         </div>
 
-        {currentWorkspace && (
-          <button
-            onClick={onOpenInvite}
-            className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold text-graphite-muted hover:text-graphite-ink hover:bg-graphite-bg rounded-lg transition"
+        {/* Quick Nav Links on Desktop */}
+        <div className="hidden lg:flex items-center space-x-1 pl-2">
+          <Link
+            to="/app/workspaces"
+            className="px-2.5 py-1 text-xs font-bold text-graphite-muted hover:text-graphite-ink hover:bg-graphite-bg rounded-md transition flex items-center space-x-1"
           >
-            <UserPlus className="w-3.5 h-3.5 text-graphite-orange" />
-            <span>Invite</span>
-          </button>
-        )}
+            <Layers className="w-3.5 h-3.5 text-graphite-orange" />
+            <span>Workspaces</span>
+          </Link>
+          <Link
+            to="/app/settings"
+            className="px-2.5 py-1 text-xs font-bold text-graphite-muted hover:text-graphite-ink hover:bg-graphite-bg rounded-md transition flex items-center space-x-1"
+          >
+            <Settings className="w-3.5 h-3.5 text-graphite-orange" />
+            <span>Settings</span>
+          </Link>
+        </div>
       </div>
 
       {/* Center: Command Palette Trigger */}
@@ -108,22 +163,33 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           onClick={onOpenCommandPalette}
           data-ui="command-palette-trigger"
-          className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-graphite-bg hover:bg-graphite-elevated text-graphite-muted hover:text-graphite-ink transition text-xs border border-graphite-bg"
+          className="flex items-center space-x-1.5 sm:space-x-2 px-2.5 sm:px-3 py-1.5 rounded-lg bg-graphite-bg hover:bg-graphite-elevated text-graphite-muted hover:text-graphite-ink transition text-xs border border-graphite-bg shrink-0"
           title="Open Command Palette (Ctrl+K / Cmd+K)"
         >
           <Search className="w-3.5 h-3.5 text-graphite-orange" />
-          <span className="hidden sm:inline">Search or command...</span>
+          <span className="hidden sm:inline">Search...</span>
           <kbd className="px-1.5 py-0.5 rounded bg-graphite-surface text-[10px] text-graphite-muted border border-graphite-elevated font-semibold">
             ⌘K
           </kbd>
         </button>
       )}
 
-      {/* Right: Socket Status, Notifications, Profile */}
-      <div className="flex items-center space-x-3">
+      {/* Right: Tutorial Help, Socket Status, Notifications, Profile */}
+      <div className="flex items-center space-x-1.5 sm:space-x-2.5">
+        {/* Getting Started Tutorial Button */}
+        {onOpenTutorial && (
+          <button
+            onClick={onOpenTutorial}
+            className="p-1.5 sm:p-2 rounded-lg bg-graphite-bg text-graphite-muted hover:text-graphite-orange hover:bg-graphite-elevated transition"
+            title="Getting Started Tutorial"
+          >
+            <HelpCircle className="w-4 h-4" />
+          </button>
+        )}
+
         {/* Socket Status Indicator */}
         <div
-          className="flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-bold bg-graphite-bg"
+          className="flex items-center space-x-1.5 sm:space-x-2 px-2.5 sm:px-3 py-1 rounded-full text-xs font-bold bg-graphite-bg"
           title={isConnected ? 'WebSocket connected' : 'Reconnecting...'}
         >
           <span
@@ -131,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               isConnected ? 'bg-emerald-400' : 'bg-amber-400'
             }`}
           />
-          <span className="hidden sm:inline text-graphite-muted text-[11px]">
+          <span className="hidden md:inline text-graphite-muted text-[11px]">
             {isConnected ? 'Socket Live' : 'Syncing'}
           </span>
         </div>
@@ -143,7 +209,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               setShowNotifications(!showNotifications);
               if (showNotifications) clearNotifications();
             }}
-            className="p-2 rounded-lg bg-graphite-bg text-graphite-muted hover:text-graphite-ink hover:bg-graphite-elevated transition relative"
+            className="p-1.5 sm:p-2 rounded-lg bg-graphite-bg text-graphite-muted hover:text-graphite-ink hover:bg-graphite-elevated transition relative"
             title="Notifications"
           >
             <Bell className="w-4 h-4" />
@@ -153,7 +219,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {showNotifications && (
-            <div data-ui="dropdown" className="absolute right-0 mt-2 w-80 bg-graphite-surface border border-graphite-bg rounded-lg z-50 overflow-hidden">
+            <div data-ui="dropdown" className="absolute right-0 mt-2 w-72 sm:w-80 bg-graphite-surface border border-graphite-bg rounded-lg z-50 overflow-hidden shadow-2xl">
               <div data-ui="popover-header" className="p-3 border-b border-graphite-bg flex items-center justify-between">
                 <span className="text-xs font-bold text-graphite-ink">Live Notifications</span>
                 {notifications.length > 0 && (
@@ -196,11 +262,56 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {showUserDropdown && (
-            <div data-ui="dropdown" className="absolute right-0 mt-2 w-52 bg-graphite-surface border border-graphite-bg rounded-lg py-1 z-50">
+            <div data-ui="dropdown" className="absolute right-0 mt-2 w-56 bg-graphite-surface border border-graphite-bg rounded-lg py-1 z-50 shadow-2xl">
               <div data-ui="popover-header" className="px-3 py-2 border-b border-graphite-bg">
                 <p className="text-xs font-bold text-graphite-ink truncate">{user?.name}</p>
                 <p className="text-[11px] text-graphite-muted truncate">{user?.email}</p>
               </div>
+
+              <div className="py-1">
+                <Link
+                  to="/app"
+                  onClick={() => setShowUserDropdown(false)}
+                  className="w-full text-left px-3 py-2 text-xs text-graphite-ink hover:bg-graphite-bg flex items-center space-x-2 transition font-bold"
+                >
+                  <Kanban className="w-3.5 h-3.5 text-graphite-orange" />
+                  <span>Boards Hub</span>
+                </Link>
+
+                <Link
+                  to="/app/workspaces"
+                  onClick={() => setShowUserDropdown(false)}
+                  className="w-full text-left px-3 py-2 text-xs text-graphite-ink hover:bg-graphite-bg flex items-center space-x-2 transition font-bold"
+                >
+                  <Layers className="w-3.5 h-3.5 text-graphite-orange" />
+                  <span>Workspaces Directory</span>
+                </Link>
+
+                <Link
+                  to="/app/settings"
+                  onClick={() => setShowUserDropdown(false)}
+                  className="w-full text-left px-3 py-2 text-xs text-graphite-ink hover:bg-graphite-bg flex items-center space-x-2 transition font-bold"
+                >
+                  <Settings className="w-3.5 h-3.5 text-graphite-orange" />
+                  <span>Theme & Settings</span>
+                </Link>
+
+                {onOpenTutorial && (
+                  <button
+                    onClick={() => {
+                      setShowUserDropdown(false);
+                      onOpenTutorial();
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs text-graphite-ink hover:bg-graphite-bg flex items-center space-x-2 transition font-bold"
+                  >
+                    <HelpCircle className="w-3.5 h-3.5 text-graphite-orange" />
+                    <span>Getting Started Tour</span>
+                  </button>
+                )}
+              </div>
+
+              <div data-ui="divider" className="border-t border-graphite-bg my-1" />
+
               <button
                 onClick={logout}
                 className="w-full text-left px-3 py-2 text-xs font-bold text-rose-400 hover:bg-rose-950/20 flex items-center space-x-2 transition"
